@@ -1,0 +1,26 @@
+---
+title: "support"
+author: "WN"
+format: 
+  html:
+    warning: false
+    message: false
+    echo: true
+    self-contained: true
+    self-contained-math: true
+    embed-resources: true
+    lang: pol
+editor: visual
+toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+## 
+
+```{r}
+library(tidyverse)
+library(rio)
+dane <- readxl::read_xlsx("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\support2.xlsx")
+head(dane)
+```
