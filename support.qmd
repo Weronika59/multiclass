@@ -16,11 +16,255 @@ editor_options:
   chunk_output_type: console
 ---
 
-## 
-
 ```{r}
 library(tidyverse)
-library(rio)
-dane <- readxl::read_xlsx("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\support2.xlsx")
-head(dane)
+library(dplyr)
+library(kableExtra)
+library(corrplot)
+```
+
+```{r}
+dane <- read.csv("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\support2.csv")
+```
+
+## Cel badania
+
+Ten zbiór danych obejmuje 9105 pacjentów w stanie krytycznym z 5 ośrodków medycznych w Stanach Zjednoczonych, do których dostęp uzyskano w latach 1989-1991 i 1992-1994. Każdy wiersz dotyczy rekordów hospitalizowanych pacjentów, którzy spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z sepsą. Celem jest określenie 2- i 6-miesięcznych wskaźników przeżycia tych pacjentów w oparciu o kilka informacji fizjologicznych, demograficznych i dotyczących ciężkości choroby. Jest to ważny problem, ponieważ odnosi się do rosnących obaw narodowych dotyczących utraty kontroli przez pacjentów pod koniec życia. Umożliwia wcześniejsze podejmowanie decyzji i planowanie w celu zmniejszenia częstotliwości mechanicznego, bolesnego i przedłużającego się procesu umierania.
+
+W jakim celu utworzono zbiór danych?
+
+Opracowanie i walidacja modelu prognostycznego, który szacuje przeżycie w okresie 180 dni dla ciężko chorych hospitalizowanych dorosłych (faza I SUPPORT) oraz porównanie przewidywań tego modelu z przewidywaniami istniejącego systemu prognostycznego i niezależnymi szacunkami lekarzy (faza II SUPPORT).
+
+Kto sfinansował utworzenie zbioru danych?
+
+Sfinansowane przez Fundację Roberta Wooda Johnsona
+
+Co reprezentują instancje w tym zbiorze danych?
+
+Instancje reprezentują rekordy krytycznie chorych pacjentów przyjętych do szpitali w Stanach Zjednoczonych z zaawansowanymi stadiami poważnej choroby.
+
+Czy istnieją zalecane podziały danych?
+
+Brak zaleceń, można zastosować standardowy podział na trening i test. Można użyć trójstronnego podziału (tj. trening-walidacja-test) podczas wyboru modelu.
+
+Czy zbiór danych zawiera dane, które można w jakikolwiek sposób uznać za wrażliwe?
+
+Tak. Istnieją informacje o rasie, płci, dochodach i poziomie wykształcenia.
+
+Czy przeprowadzono wstępne przetwarzanie danych?
+
+Ze względu na wysoki odsetek brakujących wartości istnieje kilka zalecanych wartości imputacji: Zgodnie z repozytorium HBiostat (https://hbiostat.org/data/repo/supportdesc, profesor Frank Harrell) następujące wartości domyślne okazały się przydatne w imputacji brakujących podstawowych danych fizjologicznych: Zmienna podstawowa Normalna wartość wypełnienia - Albumina w surowicy (alb) 3.5 - Stosunek PaO2/FiO2 (pafi) 333,3 - Bilirubina (bili) 1,01 - Kreatynina (crea) 1,01 - Bułka 6,51 - Liczba białych krwinek (wblc) 9 (tys.) - Wydalanie moczu (mocz) 2502 Istnieje 159 pacjentów, którzy przeżyli 2 miesiące, w przypadku których nie przeprowadzono wywiadów z pacjentami lub osobami zastępczymi. U tych pacjentów brakuje sfdm2.
+
+Dodatkowe informacje
+
+Źródłami danych są dokumentacja medyczna, wywiady osobiste i Krajowy Indeks Zgonów (NDI). Dla każdego pacjenta zebrano dane z rejestrów administracyjnych, dane kliniczne i dane ankietowe.
+
+Celem projektu SUPPORT była poprawa procesu decyzyjnego, aby odpowiedzieć na rosnące krajowe obawy dotyczące utraty kontroli przez pacjentów pod koniec życia i zmniejszyć częstotliwość mechanicznego, bolesnego i długotrwałego procesu umierania. SUPPORT składał się z dwuletniego prospektywnego badania obserwacyjnego (Faza I), po którym nastąpiło dwuletnie kontrolowane badanie kliniczne (Faza II). W fazie I badania SUPPORT zebrano dane od pacjentów przyjętych w latach 1989-1991 w celu scharakteryzowania opieki, preferencji dotyczących leczenia i wzorców podejmowania decyzji wśród krytycznie chorych pacjentów. Służyła również jako wstępny krok do opracowania strategii interwencji w celu poprawy opieki nad krytycznie chorymi pacjentami oraz do budowy modeli statystycznych do przewidywania rokowania i stanu funkcjonalnego pacjenta. Interwencja została wdrożona w II fazie badania SUPPORT, do której pacjenci byli przyjmowani w latach 1992-1994. Interwencja fazy II dostarczyła lekarzom dokładnych informacji prognostycznych na temat przyszłej zdolności funkcjonalnej, prawdopodobieństwa przeżycia do sześciu miesięcy oraz preferencji pacjentów dotyczących opieki u schyłku życia. Dodatkowo, w ramach interwencji zapewniono wykwalifikowaną pielęgniarkę w celu określenia preferencji pacjenta, przedstawienia prognoz, zwiększenia zrozumienia, umożliwienia opieki paliatywnej i ułatwienia wcześniejszego planowania. Oczekiwano, że interwencja zwiększy komunikację, skutkując wcześniejszymi decyzjami o zleceniu reanimacji, skróci czas spędzany przez pacjentów w niepożądanych stanach (np. na oddziale intensywnej terapii, pod respiratorem i w śpiączce), zwiększy zrozumienie przez lekarzy preferencji pacjentów dotyczących opieki, zmniejszy ból pacjentów i zmniejszy zużycie zasobów szpitalnych. Gromadzenie danych w obu fazach SUPPORT składało się z kwestionariuszy podawanych pacjentom, ich zastępcom i lekarzom, a także przeglądów kart w celu wyodrębnienia informacji klinicznych, leczenia i decyzji. Faza II gromadziła również informacje dotyczące wdrożenia interwencji, takie jak dzienniki dotyczące poszczególnych pacjentów prowadzone przez pielęgniarki przypisane do pacjentów w ramach interwencji. Pacjenci objęci programem SUPPORT byli obserwowani przez sześć miesięcy po włączeniu do badania. Ci, którzy nie zmarli w ciągu sześciu miesięcy lub zostali utraceni w wyniku obserwacji, zostali dopasowani do National Death Index w celu zidentyfikowania zgonów do 1997 roku. Pacjenci, którzy nie zmarli w ciągu jednego roku lub utracili możliwość obserwacji, zostali dopasowani do National Death Index w celu zidentyfikowania zgonów do 1997 r.
+
+Wszyscy pacjenci w pięciu ośrodkach medycznych w Stanach Zjednoczonych, którzy spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z posocznicą. SUPPORT to połączenie pacjentów z 2 badań, z których każde trwało 2 lata. Pierwsza faza dotyczyła 4 301 pacjentów, podczas gdy druga faza dotyczyła 4 804 pacjentów. Pod względem czasu, badania te zostały przeprowadzone w 1989 r. (12 czerwca) do 1991 r. (11 czerwca) dla fazy I oraz w 1992 r. (7 stycznia) do 1994 r. (24 stycznia).
+
+## Opis zbioru badawczego
+
+Do badania zostanie użyty zbiór `SUPPORT2` pochodzący z witryny \[UCI\]( https://archive.ics.uci.edu/dataset/880/support2). Zbiór zawiera dane o 9105 pacjentach opisanych(?) za pomocą 47 cech. Cechy te to:
+
+-   age - wiek pacjenta w latach
+
+-   death (**target**) - Śmierć w dowolnym momencie aż do danych National Death Index (NDI) w dniu 31 grudnia 1994 roku. Niektórzy pacjenci zostali wypisani przed zakończeniem badania i nie byli monitorowani. Autorzy sprawdzili informacje o zgonach. - zakres 0-1
+
+-   sex - płeć pacjenta ("male"/"female")
+
+-   hospdead (**target**) - Śmierć w szpitalu - zakres 0-1
+
+-   slos - Dni od rozpoczęcia badania do wypisu ze szpitala
+
+-   d.time - Dni obserwacji
+
+-   dzgroup - Podkategorie choroby pacjenta obejmują ARF/MOSF z sepsą, CHF, POChP, marskość wątroby, raka okrężnicy, śpiączkę, raka płuc, MOSF z maligną. (poziomy "Lung Cancer", "Cirrhosis", "ARF/MOSF w/Sepsis", "Coma", "CHF", "Colon Cancer", "COPD", "MOSF w/Malig")
+
+-   dzclass - Kategoria choroby pacjenta spośród "ARF/MOSF", "COPD/CHF/Cirrhosis", "Cancer", "Coma".
+
+-   num.co - Liczba jednoczesnych chorób (lub chorób współistniejących) występujących u pacjenta. Wartości są porządkowe, przy czym wyższe wartości wskazują na gorszy stan i szanse na przeżycie.
+
+-   edu - lata edukacji (numeric od 11 do 28)
+
+-   income - Dochód pacjenta. Wymienione wartości to {"\$11-\$25k", "\$25-\$50k", "\>\$50k", "poniżej \$11k"}.
+
+-   scoma - Wynik śpiączki w 3. dniu badania SUPPORT na podstawie skali Glasgow (przewidywany na podstawie modelu).
+
+-   charges - Opłaty szpitalne
+
+-   totcst - Całkowity stosunek kosztów do opłat (RCC) koszt
+
+-   totmcst - Całkowity koszt mikro
+
+-   avtisst - Średni wynik TISS, dni 3-25, gdzie Therapeutic Intervention Scoring System (TISS) to metoda obliczania kosztów na oddziale intensywnej terapii (OIT) i oddziale opieki pośredniej (IMCU).
+
+-   race - Rasa pacjenta. Wymienione wartości to {asian, black, hispanic, missing, other, white}.
+
+-   sps - Wynik fizjologii SUPPORT w dniu 3 (przewidywany przez model).
+
+-   aps - Wynik fizjologiczny APACHE III dzień 3 (brak śpiączki, imp bun, uout dla fazy 1)
+
+-   surv2m - Model SUPPORT Szacunkowe 2-miesięczne przeżycie w 3. dniu (przewidywane przez model)
+
+-   surv6m - Model SUPPORT Szacunkowe 6-miesięczne przeżycie w 3. dniu (przewidywane przez model)
+
+-   hday - Dzień pobytu w szpitalu, w którym pacjent został włączony do badania.
+
+-   diabetes - Czy u pacjenta występuje cukrzyca (Com 27-28, Dx 73) jako choroba współistniejąca (Y) czy nie (N).
+
+-   dementia - Czy u pacjenta występuje demencja (choroba współistniejąca 6) jako choroba współistniejąca (T) czy nie (N).
+
+-   ca - Czy pacjent ma raka (tak), czy rak się rozprzestrzenił (przerzuty) lub czy jest zdrowy (nie).
+
+-   prg2m - Oszacowane przez lekarza 2-miesięczne przeżycie pacjenta. -- zamienić na categorical??
+
+-   prg6m - Szacowane przez lekarza 6-miesięczne przeżycie pacjenta. -- -\|\|-
+
+-   dnr - Określa, czy pacjent ma nakaz nieresuscytowania (DNR). Możliwe wartości to dnr after sadm, dnr before sadm, missing, no dnr.
+
+-   dnrday - Dzień zlecenia DNR (\<0, jeśli przed badaniem)
+
+-   meanbp - średnie ciśnienie tętnicze krwi pacjenta mierzone w dniu 3.
+
+-   wblc - liczba białych krwinek (w tysiącach) zmierzona w dniu 3.
+
+-   hrt - częstość akcji serca pacjenta mierzona w dniu 3.
+
+-   resp - częstość oddechów pacjenta mierzona w dniu 3.
+
+-   temp - temperatura w stopniach Celsjusza zmierzona w dniu 3.
+
+-   pafi - Stosunek PaO_2/FiO_2 zmierzony w dniu 3. Stosunek tętniczego ciśnienia parcjalnego tlenu (PaO2 w mmHg) do frakcji wdychanego tlenu (FiO2 wyrażone jako ułamek). Powszechnie stosowany kliniczny wskaźnik hipoksemii, choć jego przydatność diagnostyczna jest kontrowersyjna. Określone zakresy wartości mogą być związane z różnymi poziomami śmiertelności. Warto rozważyć podzielenie tych wartości według pewnych zakresów: https://litfl.com/pao2-fio2-ratio/
+
+-   alb - poziom albuminy w surowicy mierzony w dniu 3.
+
+-   bili - poziom bilirubiny mierzony w dniu 3.
+
+-   crea - poziom kreatyniny w surowicy mierzony w dniu 3.
+
+-   sod - stężenie sodu w surowicy mierzone w dniu 3.
+
+-   ph - pH krwi tętniczej. Wartość pH krwi wynosi zwykle od 7,35 do 7,45. Nieprawidłowe wyniki mogą być spowodowane chorobami płuc, nerek, chorobami metabolicznymi lub przyjmowanymi lekami. Urazy głowy lub szyi lub inne urazy wpływające na oddychanie również mogą prowadzić do nieprawidłowych wyników.
+
+-   glocuse - Poziom glukozy mierzony w dniu 3.
+
+-   bun - Poziom azotu mocznikowego we krwi mierzony w dniu 3.
+
+-   urine - Wydalanie moczu mierzone w 3. dniu.
+
+-   adlp - Indeks czynności życia codziennego (ADL) pacjenta, wypełniany przez pacjenta. Wyższe wartości wskazują na większe szanse na przeżycie, mierzone w dniu 3.
+
+-   adls - Indeks czynności życia codziennego (ADL) pacjenta, wypełniany przez osobę zastępczą (np. członka rodziny), mierzony w 3. dniu. Wyższe wartości wskazują na większe szanse na przeżycie.
+
+-   sfdm2 (**target**) - Poziom niepełnosprawności funkcjonalnej pacjenta w skali od 1 do 5, gdzie 5 oznacza najwyższy stopień nasilenia. Wartości uzyskano za pomocą pytań skierowanych do pacjenta i/lub osób zastępczych w celu określenia wpływu profilu choroby (SIP). Wartości są skorelowane z kolumnami ADLS, ADLP. Wymienione wartości to: {1: "no(Month 2 and SIP pres)", "adl\>=4 (\>=5 if sur)", "SIP\>=30", "Coma or Intub", 5: "\<2 mo. follow-up"}. Istnieje 159 pacjentów, którzy przeżyli 2 miesiące, dla których nie przeprowadzono wywiadów z pacjentami lub osobami zastępczymi. U tych pacjentów brakuje sfdm2.
+
+-   adlsc - Imputowany ADL skalibrowany do surogatu.
+
+Poniżej zaprezentowano pierwsze pięć obserwacji ze zbioru badawczego.
+
+```{r}
+head(dane, 5) |> kable() |> kable_paper()
+```
+
+Z opisu poszczególnych zmiennych oraz z powyższej tabelki, widzimy, że konieczne jest m. in. zamiana pewnych cech na zmienne kategoryczne, zamiana ich poziomów na liczby. Widocznych jest także kilka kolumn, w których widoczne są braki danych. Dodatkowo wiek został przedstawiony jako liczba zmiennoprzecinkowa z dokładnością do 5. miejsca po przecinku.
+
+Na tym etapie zostaną wprowadzone następujące zmiany:
+
+```{r}
+dane$death <- as.factor(dane$death)
+dane$hospdead <- as.factor(dane$hospdead)
+dane$diabetes <- as.factor(dane$diabetes)
+dane$dementia <- as.factor(dane$dementia)
+dane$sex <- ifelse(dane$sex=="male", 0, 1)
+dane$sex <- as.factor(dane$sex)
+dane$dzgroup <- ifelse(dane$dzgroup=="Lung Cancer", 1, ifelse(dane$dzgroup=="Cirrhosis", 2, ifelse(dane$dzgroup=="Coma", 3, ifelse(dane$dzgroup=="CHF", 4, ifelse(dane$dzgroup=="Colon Cancer", 5, ifelse(dane$dzgroup=="COPD", 6, ifelse(dane$dzgroup=="MOSF w/Malig", 7, 8)))))))
+dane$dzgroup <- as.factor(dane$dzgroup)
+dane$dzclass <- ifelse(dane$dzclass=="Cancer", 1, ifelse(dane$dzclass=="ARF/MOSF", 2, ifelse(dane$dzclass=="Coma", 3, 4)))
+dane$dzclass <- as.factor(dane$dzclass)
+dane$income <- ifelse(dane$income=="under $11k", 1, ifelse(dane$income=="$11-$25k", 2, ifelse(dane$income=="$25-$50k", 3, ifelse(dane$income==">$50k", 4, NA))))
+dane$income <- as.factor(dane$income)
+dane$race <- ifelse(dane$race=="white", 1, ifelse(dane$race=="black", 2, ifelse(dane$race=="asian", 3, ifelse(dane$race=="hispanic", 4, ifelse(dane$race=="other", 5, NA)))))
+dane$race <- as.factor(dane$race)
+dane$ca <- ifelse(dane$ca=="no", 0, ifelse(dane$ca=="yes", 1, 2))
+dane$ca <- as.factor(dane$ca)
+dane$dnr <- ifelse(dane$dnr=="no dnr", 0, ifelse(dane$dnr=="dnr after sadm", 1, ifelse(dane$dnr=="dnr before sadm", 2, NA)))
+dane$dnr <- as.factor(dane$dnr)
+dane$sfdm2 <- ifelse(dane$sfdm2=="<2 mo. follow-up", 1, ifelse(dane$sfdm2=="no(M2 and SIP pres)", 2, ifelse(dane$sfdm2=="SIP>=30", 3, ifelse(dane$sfdm2=="adl>=4 (>=5 if sur)", 4, ifelse(dane$sfdm2=="Coma or Intub", 5, NA)))))
+dane$sfdm2 <- as.factor(dane$sfdm2)
+```
+
+-   zmienna death - factor +
+
+-   sex - 0-1 i factor +
+
+-   hospdead - factor +
+
+-   dzgroup - 8 poziomów, factor +
+
+-   dzclass - 4 poziomy, factor +
+
+-   income - 4 poziomy + NA, factor +
+
+-   race - 5 poziomów + NA, factor +
+
+-   surv2m, surv6m, prg2m, prg6m - czy zamienić na liczby 0-1???
+
+-   diabetes, dementia - factor +
+
+-   ca - 3 poziomy, factor +
+
+-   dnr - 3 poziomy + NA, factor +
+
+-   sfdm2 - 5 poziomów + NA, factor +
+
+-   dnrday - Dzień zlecenia DNR (\<0, jeśli przed badaniem) - zamienić \<0 na 0???? \<----
+
+Poniżej przedstawiono pierwszych 5 wierszy ramki danych po wymienionych wyżej transformacjach.
+
+```{r}
+head(dane, 5) |> kable() |> kable_styling()
+```
+
+Poniżej zaprezentowane są podstawowe statystyki opisowe dla zmiennych numerycznych:
+
+```{r}
+options(knitr.kable.NA=0)
+pods <- sub(".*:", "",summary(dane[,c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")]))
+rownames(pods) <- c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max.", "NA's")
+pods %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
+```
+
+Na podstawie powyższych danych, widzimy, że najmłodszy badany pacjent miał 18 lat, a najstarszy 101. Są pacjenci, którzy nie mają za sobą lat edukacji (wynik 0??). Jest pacjent, który za pobyt w szpitalu zapłacił niemal 1,5 mln dolarów. Min `totcst` - Całkowity stosunek kosztów do opłat (RCC) koszt wynisi 0 - ?? Min w `meanbp` - ciśnieniu tentniczym oraz `wblc`, `hrt`, `resp` - tzn. pacjent nie żyje?? - to samo z `glucose`, `urine`, `adlp`, `adls`.
+
+Ponadto jest 13 zmiennych, dla których liczba braków danych przekracza 1000 - należy przeprowadzić dla nich odpowiednie metody imputacji braków.
+
+Dla zmiennych kategorycznych prezentujemy ich możliwe poziomy oraz liczby wystąpień każdego poziomu:
+
+```{r}
+options(knitr.kable.NA='')
+summary(dane[,c("death", "sex", "hospdead", "dzgroup", "dzclass", "income", "race", "diabetes", "dementia", "ca", "dnr", "sfdm2")]) %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
+```
+
+Na podsatwie powyższej tabeli, widzimy, że w zmiennych `income` oraz `sfdm2` liczba braków danych jest duża (ponad 1000). Ponadto większość widocznych zmiennych kategorycznych charakteryzuje się niezbalansowaniem klasowym. Warto będzie rozważyć metody up-/downsamplingu.
+
+#### Braki danych
+
+Poniżej zaprezentowana jest liczba braków danych w każdej z kolumn. Jak widać, braki danych pojawiają się tylko w dwóch kolumnach: \`bmi\` i \`smoking_status\`.
+
+```{r}
+braki <- colSums(is.na(dane)) 
+
+braki <- cbind(braki)
+
+colnames(braki) <- "Liczba braków"
+
+braki %>% kable() %>% kable_styling(full_width = F, bootstrap_options  = "striped")
+```
+
+#### Macierz korelacji
+
+```{r}
+mydata.cor = cor(dane[,c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")], use = "na.or.complete")
+corrplot(mydata.cor, tl.cex = 0.6)
 ```
