@@ -21,6 +21,7 @@ library(tidyverse)
 library(dplyr)
 library(kableExtra)
 library(corrplot)
+library(tidyr)
 ```
 
 ```{r}
@@ -164,7 +165,7 @@ Do badania zostanie użyty zbiór `SUPPORT2` pochodzący z witryny \[UCI\]( http
 Poniżej zaprezentowano pierwsze pięć obserwacji ze zbioru badawczego.
 
 ```{r}
-head(dane, 5) |> kable() |> kable_paper()
+head(dane, 5) |> kable() |> kable_styling()
 ```
 
 Z opisu poszczególnych zmiennych oraz z powyższej tabelki, widzimy, że konieczne jest m. in. zamiana pewnych cech na zmienne kategoryczne, zamiana ich poziomów na liczby. Widocznych jest także kilka kolumn, w których widoczne są braki danych. Dodatkowo wiek został przedstawiony jako liczba zmiennoprzecinkowa z dokładnością do 5. miejsca po przecinku.
@@ -235,7 +236,21 @@ rownames(pods) <- c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max.", "NA'
 pods %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
 ```
 
-Na podstawie powyższych danych, widzimy, że najmłodszy badany pacjent miał 18 lat, a najstarszy 101. Są pacjenci, którzy nie mają za sobą lat edukacji (wynik 0??). Jest pacjent, który za pobyt w szpitalu zapłacił niemal 1,5 mln dolarów. Min `totcst` - Całkowity stosunek kosztów do opłat (RCC) koszt wynisi 0 - ?? Min w `meanbp` - ciśnieniu tentniczym oraz `wblc`, `hrt`, `resp` - tzn. pacjent nie żyje?? - to samo z `glucose`, `urine`, `adlp`, `adls`.
+Na podstawie powyższych danych, widzimy, że najmłodszy badany pacjent miał 18 lat, a najstarszy 101. Są pacjenci, którzy nie mają za sobą lat edukacji (wynik 0??). Jest pacjent, który za pobyt w szpitalu zapłacił niemal 1,5 mln dolarów. Min `totcst` - Całkowity stosunek kosztów do opłat (RCC) koszt wynisi 0 - ?? Min w `meanbp` - ciśnieniu tętniczym oraz `wblc`, `hrt`, `resp` - tzn. pacjent nie żyje?? - to samo z `glucose`, `urine`, `adlp`, `adls`, `adlsc`.
+
+```{r}
+dane[dane$meanbp==0,] |> nrow() #52
+dane[dane$wblc==0,] |> nrow() #222
+dane[dane$hrt==0,] |> nrow() #84
+dane[dane$resp==0,] |> nrow() #66
+dane[dane$glucose==0,] |> nrow() #4501
+dane[dane$urine==0,] |> nrow() #4955
+dane[dane$adlp==0,] |> nrow() #7490
+dane[dane$adls==0,] |> nrow() #5975
+dane[dane$adlsc==0,] |> nrow() #3108 razem prawie 25,5 tys.
+```
+
+Po przyjrzeniu się obserwacjom, dla których wymienione wyzej zmienne wynoszą 0, podjęto decyzję o nieusuwaniu ich ze zbioru danych. Gdy np. średnie ciśnienie tętnicze wynosi 0, większość z tych pacjentów w kolumnie `hospdead` (śmierć w szpitalu) czy `death` (śmierć w dowolnym momencie) ma wartość 1. Poza tym, wszystkich takich obserwacji z zerami dla tych zmiennych jest niemal 6 tysięcy.
 
 Ponadto jest 13 zmiennych, dla których liczba braków danych przekracza 1000 - należy przeprowadzić dla nich odpowiednie metody imputacji braków.
 
@@ -246,11 +261,11 @@ options(knitr.kable.NA='')
 summary(dane[,c("death", "sex", "hospdead", "dzgroup", "dzclass", "income", "race", "diabetes", "dementia", "ca", "dnr", "sfdm2")]) %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
 ```
 
-Na podsatwie powyższej tabeli, widzimy, że w zmiennych `income` oraz `sfdm2` liczba braków danych jest duża (ponad 1000). Ponadto większość widocznych zmiennych kategorycznych charakteryzuje się niezbalansowaniem klasowym. Warto będzie rozważyć metody up-/downsamplingu.
+Na podstawie powyższej tabeli, widzimy, że w zmiennych `income` oraz `sfdm2` liczba braków danych jest duża (ponad 1000). Ponadto większość widocznych zmiennych kategorycznych charakteryzuje się niezbalansowaniem klasowym. Warto będzie rozważyć metody up-/downsamplingu.
 
 #### Braki danych
 
-Poniżej zaprezentowana jest liczba braków danych w każdej z kolumn. Jak widać, braki danych pojawiają się tylko w dwóch kolumnach: \`bmi\` i \`smoking_status\`.
+Poniżej zaprezentowana jest liczba braków danych w każdej z kolumn.
 
 ```{r}
 braki <- colSums(is.na(dane)) 
@@ -260,6 +275,45 @@ braki <- cbind(braki)
 colnames(braki) <- "Liczba braków"
 
 braki %>% kable() %>% kable_styling(full_width = F, bootstrap_options  = "striped")
+```
+
+Jak widać, braki danych pojawiają się w kolumnach: `edu`, `income`, `scoma` (tylko 1), `charges`, `totcst`, `totmcst`, `avisst`, `race`, `sps` (1), `aps` (1), `surv2m` (1), `surv6m` (1), `prg2m`, `prg6m`, `dnr`, `dnrday`, `meanbp` (1), `wblc`, `hrt` (1), `resp` (1), `temp` (1), `pafi`, `alb`, `bili`, `crea`, `sod` (1), `ph`, `glucose`, `bun`, `urine`, `adlp`, `adls` oraz `sfdm2.`
+
+Aby przeprowadzić odpowiednią metodę imputacji braków danych, zostaną zbadane rozkłady poszczególnych zmiennych.
+
+```{r}
+dane |> select(c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
+  pivot_longer(cols = everything()) |> 
+  ggplot(aes(value, fill = name)) +
+  geom_histogram(bins = 15, color = "white")+
+  facet_wrap(~name, scales = "free")+
+  labs(fill = "zmienne numeryczne")+
+  theme(legend.position = "top")
+```
+
+Na podstawie powyższych rozkładów zmiennych numerycznych, widzimy, że:
+
+-   lewostronnie asymetryczny jest rozkład zmiennych: (lekko) age, surv2m, surv6m
+
+-   prawostronnie asymetryczny jest rozkład zmiennych: adlp, adls, alb, aps, avtisst, bili, bun, charges, crea, d.time, dnrday, edu (lekko), glucose, hday, hrt, num.co, pafi, resp, scoma, slos, (lekko) sod, sps, totcst, totmcst, urine, wblc
+
+```{r}
+dane |> select(-c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
+  pivot_longer(cols = everything()) |> 
+  ggplot(aes(value, fill = name)) +
+  geom_bar()+
+  facet_wrap(~name, scales = "free")+
+  labs(fill = "zmienne kategoryczne")+
+  theme(legend.position = "top")
+```
+
+Na podstawie powyższych rozkładów zmiennych kategorycznych, widzimy, że każda ze zmiennych charakteryzuje się niezbalansowaniem. Dla zmiennej dementia czy race poszczególne poziomy wyróżniają się naczącymi różnicami liczebnościowymi.
+
+Ze względu na asymetrię rozkładów zmiennych ilościowych oraz niezbalansowanie zmiennych jakościowych, odrzucam dla nich imputację metodą najczęściej występującej wartości oraz medianą czy średnią. Zastosuję dla nich metodę imputacji $k$-najbliższych sąsiadów (tu 5).
+
+```{r}
+dane2 <- DMwR2::knnImputation(dane[,c("edu", "income", "scoma", "charges", "totcst", "totmcst", "avtisst", "race", "sps", "aps", "surv2m", "surv6m", "prg2m", "prg6m", "dnr", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "sfdm2")], k=5, meth='pmm')
+dane <- bind_cols(dane[,c(1:9,22:25,47)], dane2)
 ```
 
 #### Macierz korelacji
