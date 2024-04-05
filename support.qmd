@@ -22,6 +22,8 @@ library(dplyr)
 library(kableExtra)
 library(corrplot)
 library(tidyr)
+library(caret)
+library(rstatix)
 ```
 
 ```{r}
@@ -313,12 +315,110 @@ Ze względu na asymetrię rozkładów zmiennych ilościowych oraz niezbalansowan
 
 ```{r}
 dane2 <- DMwR2::knnImputation(dane[,c("edu", "income", "scoma", "charges", "totcst", "totmcst", "avtisst", "race", "sps", "aps", "surv2m", "surv6m", "prg2m", "prg6m", "dnr", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "sfdm2")], k=5, meth='pmm')
-dane <- bind_cols(dane[,c(1:9,22:25,47)], dane2)
+dane3 <- bind_cols(dane[,c(1:9,22:25,47)], dane2)
 ```
 
 #### Macierz korelacji
 
 ```{r}
-mydata.cor = cor(dane[,c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")], use = "na.or.complete")
+mydata.cor = cor(dane3[,c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "sps", "aps", "surv2m", "surv6m", "hday", "prg2m", "prg6m", "dnrday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")], use = "na.or.complete")
 corrplot(mydata.cor, tl.cex = 0.6)
 ```
+
+Z macierzy korelacji dla zmiennych numerycznych, wyczytać możemy, że istnieją bardzo silne korelacje pomiędzy zmiennymi: slos oraz dnrday, surv6m i surf2m, surv2m i sps, prg2m oraz prg6m, charges z totcst i totmcst, aps i sps, adls i adlsc.
+
+```{r}
+cor(dane3$slos, dane3$dnrday) #0.88
+cor(dane3$surv6m, dane3$surv2m) #0.96
+cor(dane3$surv2m, dane3$sps) #-0.76
+cor(dane3$prg2m, dane3$prg6m) #0.90
+cor(dane3$charges, dane3$totcst) #0.81
+cor(dane3$charges, dane3$totmcst) #0.74
+cor(dane3$totcst, dane3$totmcst) #0.86
+cor(dane3$aps, dane3$sps) #0.80
+cor(dane3$adls, dane3$adlsc) #0.91
+```
+
+Należy rozważyć metody redukujące wymiary, np. PCA.
+
+#### Wartości odstające
+
+```{r}
+nearZeroVar(dane3) #dementia
+```
+
+Dla zmiennej `dementia` stosunek częstotliwości najczęściej występującej wartości do częstotliwości drugiej najczęściej występującej wartości jest duży.
+
+```{r}
+dane3 |> 
+  select(where(is.numeric)) |> 
+  findLinearCombos()
+```
+
+Brak jest również w tym zbiorze danych kombinacji liniowych pomiędzy predyktorami.
+
+```{r}
+dane3 |> 
+  select(-c("death", "sex", "hospdead", "dzgroup", "dzclass", "diabetes", "dementia", "ca", "income", "race", "dnr", "sfdm2")) |> 
+  pivot_longer(cols = everything()) |> 
+  ggplot(aes(value, fill = name)) +
+  geom_boxplot()+
+  facet_wrap(~name, scales = "free")+
+  theme(legend.position = "top")
+```
+
+Powyższe wykresy ramka-wąsy wskazują, że niemal dla każdej zmiennej numerycznej istnieją wartości odstające.
+
+```{r}
+identify_outliers(dane3, colnames(dane3)[1])[identify_outliers(dane3, colnames(dane3)[1])$is.extreme==T,] |> nrow() #age - 56, brak extreme
+identify_outliers(dane3, colnames(dane3)[5])[identify_outliers(dane3, colnames(dane3)[5])$is.extreme==T,] |> nrow() #slos - 768, 347 extreme
+identify_outliers(dane3, colnames(dane3)[6])[identify_outliers(dane3, colnames(dane3)[6])$is.extreme==T,] |> nrow() #d.time - 267, brak extreme
+identify_outliers(dane3, colnames(dane3)[9])[identify_outliers(dane3, colnames(dane3)[9])$is.extreme==T,] |> nrow() #num.co - 25, brak extreme
+identify_outliers(dane3, colnames(dane3)[10])[identify_outliers(dane3, colnames(dane3)[10])$is.extreme==T,] |> nrow() #hday - 1543, 1118 extreme
+identify_outliers(dane3, colnames(dane3)[14]) |> nrow() #adlsc - brak
+identify_outliers(dane3, colnames(dane3)[15])[identify_outliers(dane3, colnames(dane3)[15])$is.extreme==T,] |> nrow() #edu - 654, 68 extreme
+identify_outliers(dane3, colnames(dane3)[17])[identify_outliers(dane3, colnames(dane3)[17])$is.extreme==T,] |> nrow() #scoma - 1955, 1516 extreme
+identify_outliers(dane3, colnames(dane3)[18])[identify_outliers(dane3, colnames(dane3)[18])$is.extreme==T,] |> nrow() #charges - 931, 455 extreme
+identify_outliers(dane3, colnames(dane3)[19])[identify_outliers(dane3, colnames(dane3)[19])$is.extreme==T,] |> nrow() #totcst - 856, 384 extreme
+identify_outliers(dane3, colnames(dane3)[20])[identify_outliers(dane3, colnames(dane3)[20])$is.extreme==T,] |> nrow() #totmcst - 800, 401 extreme
+identify_outliers(dane3, colnames(dane3)[21])[identify_outliers(dane3, colnames(dane3)[21])$is.extreme==T,] |> nrow() #avtisst - 48, brak extreme
+identify_outliers(dane3, colnames(dane3)[23])[identify_outliers(dane3, colnames(dane3)[23])$is.extreme==T,] |> nrow() #sps - 283, 70 extreme
+identify_outliers(dane3, colnames(dane3)[24])[identify_outliers(dane3, colnames(dane3)[24])$is.extreme==T,] |> nrow() #aps - 178, 5 extreme
+identify_outliers(dane3, colnames(dane3)[25]) |> nrow() #surv2m - 307, brak extreme
+identify_outliers(dane3, colnames(dane3)[26]) |> nrow() #surv6m - brak
+identify_outliers(dane3, colnames(dane3)[27]) |> nrow() #prg2m - brak
+identify_outliers(dane3, colnames(dane3)[28]) |> nrow() #prg6m - brak
+identify_outliers(dane3, colnames(dane3)[30]) |> nrow() #dnrday - 801, 332 extreme
+identify_outliers(dane3, colnames(dane3)[31])[identify_outliers(dane3, colnames(dane3)[31])$is.extreme==T,] |> nrow() #meanbp - 6, brak extreme
+identify_outliers(dane3, colnames(dane3)[32])[identify_outliers(dane3, colnames(dane3)[32])$is.extreme==T,] |> nrow() #wblc - 400, 123 extreme
+identify_outliers(dane3, colnames(dane3)[33])[identify_outliers(dane3, colnames(dane3)[33])$is.extreme==T,] |> nrow() #hrt - 40, 1 extreme
+identify_outliers(dane3, colnames(dane3)[34])[identify_outliers(dane3, colnames(dane3)[34])$is.extreme==T,] |> nrow() #resp - 313, 23 extreme
+identify_outliers(dane3, colnames(dane3)[35])[identify_outliers(dane3, colnames(dane3)[35])$is.extreme==T,] |> nrow() #temp - 14, brak extreme
+identify_outliers(dane3, colnames(dane3)[36])[identify_outliers(dane3, colnames(dane3)[36])$is.extreme==T,] |> nrow() #pafi - 189, 12 extreme
+identify_outliers(dane3, colnames(dane3)[37])[identify_outliers(dane3, colnames(dane3)[37])$is.extreme==T,] |> nrow() #alb - 93, 4 extreme
+identify_outliers(dane3, colnames(dane3)[38])[identify_outliers(dane3, colnames(dane3)[38])$is.extreme==T,] |> nrow() #bili - 1165, 707 extreme
+identify_outliers(dane3, colnames(dane3)[39])[identify_outliers(dane3, colnames(dane3)[39])$is.extreme==T,] |> nrow() #crea - 988, 538 extreme
+identify_outliers(dane3, colnames(dane3)[40])[identify_outliers(dane3, colnames(dane3)[40])$is.extreme==T,] |> nrow() #sod - 256, 16 extreme
+identify_outliers(dane3, colnames(dane3)[41])[identify_outliers(dane3, colnames(dane3)[41])$is.extreme==T,] |> nrow() #ph - 372,59 extreme
+identify_outliers(dane3, colnames(dane3)[42])[identify_outliers(dane3, colnames(dane3)[42])$is.extreme==T,] |> nrow() #glucose - 482, 148 extreme
+identify_outliers(dane3, colnames(dane3)[43])[identify_outliers(dane3, colnames(dane3)[43])$is.extreme==T,] |> nrow() #bun - 648, 148 extreme
+identify_outliers(dane3, colnames(dane3)[44])[identify_outliers(dane3, colnames(dane3)[44])$is.extreme==T,] |> nrow() #urine - 378, 74 extreme
+identify_outliers(dane3, colnames(dane3)[45])[identify_outliers(dane3, colnames(dane3)[45])$is.extreme==T,] |> nrow() #adlp - 420, 53 extreme
+identify_outliers(dane3, colnames(dane3)[46])[identify_outliers(dane3, colnames(dane3)[46])$is.extreme==T,] |> nrow() #adls - 707, brak extreme
+```
+
+Obserwacje zidentyfikowane jako odstające nie zidentyfikowano tylko dla czterech zmiennych. Najliczniej występują one dla zmiennej `scoma` i ich liczba wynosi niemal dwa tysiące. Samych wartości ekstremalnych dla tej zminnej jest nieco ponad 1,5 tysiąca. Usunięcie tych obserwacji to pozbycie się prawie 20% zbioru, co byłoby niepoprawnym działaniem. Na ten moment zidentyfikowane wartości odstające poztstaną niezmienne.
+
+## Wizualizacje zbioru
+
+## **Przygotowanie danych do budowy modelu**
+
+Chcąc rozwiązać zadanie klasyfikacyjne z wieloma wyjściami postanowiłem przygotować dwa zestawy danych uczących. Jeden by nie stosował metod *upsamplingu,* natomiast do drugiego zastosowałbym metodę MLSMOTE (ang. *Synthetic oversampling of multilabel instances*). W ramach preprocesingu ograniczę się do standaryzacji zmiennych (również na potrzeby stosowania MLSMOTE, ponieważ jest ona oparta o odległości pomiędzy obiektami - kNN), zamiany zmiennej jakościowej na *dummy variable*. Do oceny dopasowania modeli zastosuję miary zarówno na poziomie pojedynczych etykiet, jaki i zestawów etykiet. Jako model, którego użyję do porównań posłuży mi SVM w różnych wariantach:
+
+-   *binary revelance -* jest to adaptacja powszechnie znanego podejścia *one-vs-all*. Metoda ta przekształca oryginalny wieloetykietowy zbiór danych w kilka binarnych zbiorów danych, tyle ile jest różnych etykiet. W ten sposób można użyć dowolnego klasyfikatora binarnego, łącząc ich indywidualne przewidywania w celu wygenerowania ostatecznego wyniku.
+
+-   *label powerset* - metoda ta przekształca zbiór danych wieloetykietowych w zbiór danych wieloklasowych, wykorzystując zestaw etykiet każdej instancji jako identyfikator klasy. Można użyć dowolnego klasyfikatora wieloklasowego, przekształcając przewidywaną klasę z powrotem w zestaw etykiet.
+
+-   *classifier chains -* poznany na wykładzie.
+
+++ sieci neuronowe
