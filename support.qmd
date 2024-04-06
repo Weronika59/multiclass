@@ -24,6 +24,7 @@ library(corrplot)
 library(tidyr)
 library(caret)
 library(rstatix)
+library(keras)
 ```
 
 ```{r}
@@ -422,3 +423,266 @@ Chcąc rozwiązać zadanie klasyfikacyjne z wieloma wyjściami postanowiłem prz
 -   *classifier chains -* poznany na wykładzie.
 
 ++ sieci neuronowe
+
+### Model bez upsamplingu
+
+```{r}
+library(tidymodels)
+library(mldr)
+library(mldr.resampling)
+library(utiml)
+setParallel(FALSE)
+setNumCores(4)
+
+
+set.seed(44)
+dane3$death <- as.numeric(dane3$death)
+dane3$hospdead <- as.numeric(dane3$hospdead)
+dane3$sfdm2 <- as.numeric(dane3$sfdm2)
+w <- c()
+for(i in 1:nrow(dane3)){
+  w[i] <- ifelse(dane3$death[i]==1, dane3$death[i] <- 0, dane3$death[i] <- 1)
+}
+dane3$death <- w
+w2 <- c()
+for(i in 1:nrow(dane3)){
+  w2[i] <- ifelse(dane3$hospdead[i]==1, dane3$hospdead[i] <- 0, dane3$hospdead[i] <- 1)
+}
+dane3$hospdead <- w2
+
+split <- initial_split(dane3, prop = 0.7)
+df_train <- training(split)
+df_test <- testing(split)
+
+rec <- recipe(death+hospdead+sfdm2 ~ ., data = df_train) |> 
+  step_normalize(all_numeric_predictors()) |> 
+  step_pca(all_numeric_predictors()) |> 
+  step_dummy(sex, dzgroup, dzclass, ca, income, race, dnr, diabetes, dementia)
+
+df_train_trans <- rec |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
+  select(everything())
+
+df_test_trans <- rec |> 
+  prep() |> 
+  bake(new_data = df_test) |> 
+  select(everything())
+
+df_train_trans |> 
+  head()
+
+df_train_trans$dementia_X1 <- as.numeric(df_train_trans$dementia_X1)
+df_train_trans$diabetes_X1 <- as.numeric(df_train_trans$diabetes_X1)
+df_train_trans$dnr_X2 <- as.numeric(df_train_trans$dnr_X2)
+df_train_trans$dnr_X1 <- as.numeric(df_train_trans$dnr_X1)
+df_train_trans$race_X2 <- as.numeric(df_train_trans$race_X2)
+df_train_trans$race_X3 <- as.numeric(df_train_trans$race_X3)
+df_train_trans$race_X4 <- as.numeric(df_train_trans$race_X4)
+df_train_trans$race_X5 <- as.numeric(df_train_trans$race_X5)
+df_train_trans$income_X4 <- as.numeric(df_train_trans$income_X4)
+df_train_trans$income_X3 <- as.numeric(df_train_trans$income_X3)
+df_train_trans$income_X2 <- as.numeric(df_train_trans$income_X2)
+df_train_trans$ca_X2 <- as.numeric(df_train_trans$ca_X2)
+df_train_trans$ca_X1 <- as.numeric(df_train_trans$ca_X1)
+df_train_trans$dzclass_X2 <- as.numeric(df_train_trans$dzclass_X2)
+df_train_trans$dzclass_X3 <- as.numeric(df_train_trans$dzclass_X3)
+df_train_trans$dzclass_X4 <- as.numeric(df_train_trans$dzclass_X4)
+df_train_trans$dzgroup_X2 <- as.numeric(df_train_trans$dzgroup_X2)
+df_train_trans$dzgroup_X3 <- as.numeric(df_train_trans$dzgroup_X3)
+df_train_trans$dzgroup_X4 <- as.numeric(df_train_trans$dzgroup_X4)
+df_train_trans$dzgroup_X5 <- as.numeric(df_train_trans$dzgroup_X5)
+df_train_trans$dzgroup_X6 <- as.numeric(df_train_trans$dzgroup_X6)
+df_train_trans$dzgroup_X7 <- as.numeric(df_train_trans$dzgroup_X7)
+df_train_trans$dzgroup_X8 <- as.numeric(df_train_trans$dzgroup_X8)
+df_train_trans$sex_X1 <- as.numeric(df_train_trans$sex_X1)
+df_train_trans <- as.data.frame(df_train_trans)
+
+df_test_trans$dementia_X1 <- as.numeric(df_test_trans$dementia_X1)
+df_test_trans$diabetes_X1 <- as.numeric(df_test_trans$diabetes_X1)
+df_test_trans$dnr_X2 <- as.numeric(df_test_trans$dnr_X2)
+df_test_trans$dnr_X1 <- as.numeric(df_test_trans$dnr_X1)
+df_test_trans$race_X2 <- as.numeric(df_test_trans$race_X2)
+df_test_trans$race_X3 <- as.numeric(df_test_trans$race_X3)
+df_test_trans$race_X4 <- as.numeric(df_test_trans$race_X4)
+df_test_trans$race_X5 <- as.numeric(df_test_trans$race_X5)
+df_test_trans$income_X4 <- as.numeric(df_test_trans$income_X4)
+df_test_trans$income_X3 <- as.numeric(df_test_trans$income_X3)
+df_test_trans$income_X2 <- as.numeric(df_test_trans$income_X2)
+df_test_trans$ca_X2 <- as.numeric(df_test_trans$ca_X2)
+df_test_trans$ca_X1 <- as.numeric(df_test_trans$ca_X1)
+df_test_trans$dzclass_X2 <- as.numeric(df_test_trans$dzclass_X2)
+df_test_trans$dzclass_X3 <- as.numeric(df_test_trans$dzclass_X3)
+df_test_trans$dzclass_X4 <- as.numeric(df_test_trans$dzclass_X4)
+df_test_trans$dzgroup_X2 <- as.numeric(df_test_trans$dzgroup_X2)
+df_test_trans$dzgroup_X3 <- as.numeric(df_test_trans$dzgroup_X3)
+df_test_trans$dzgroup_X4 <- as.numeric(df_test_trans$dzgroup_X4)
+df_test_trans$dzgroup_X5 <- as.numeric(df_test_trans$dzgroup_X5)
+df_test_trans$dzgroup_X6 <- as.numeric(df_test_trans$dzgroup_X6)
+df_test_trans$dzgroup_X7 <- as.numeric(df_test_trans$dzgroup_X7)
+df_test_trans$dzgroup_X8 <- as.numeric(df_test_trans$dzgroup_X8)
+df_test_trans$sex_X1 <- as.numeric(df_test_trans$sex_X1)
+df_test_trans <- as.data.frame(df_test_trans)
+```
+
+W ten sposób przygotowany został podstawowy *preprocessing* oraz podział na zbiór uczący i testowy, który zostanie wykorzystany w obu modelach, z tą różnicą, że w drugim modelu zostanie przeprowadzony MLSMOTE na zbiorze uczącym.
+
+```{r}
+dt_train1 <- mldr_from_dataframe(df_train_trans, labelIndices = c(1:3)) 
+dt_test <- mldr_from_dataframe(df_test_trans, labelIndices = c(1:3)) 
+dt_train1$labelsets
+dt_test$labelsets
+```
+
+Jak widać niektóre zestawy etykiet są bardzo rzadkie, szczególnie w zbiorze testowym.
+
+#### Binary relevance model
+
+```{r}
+br_train1 <- br(dt_train1, "SVM", seed=123)
+pred_br_1 <- predict(br_train1, dt_test)
+
+head(as.bipartition(pred_br_1))
+head(as.probability(pred_br_1))
+head(as.ranking(pred_br_1))
+multilabel_confusion_matrix(dt_test, pred_br_1)
+(eval_br_1 <- multilabel_evaluate(dt_test, pred_br_1, measures = c("example-based", "micro-based")))
+```
+
+Accuracy na poziomie 86%.
+
+#### Label powerset model
+
+```{r}
+lp_train1 <- lp(dt_train1, "SVM", seed = 123)
+pred_lp_1 <- predict(lp_train1, dt_test)
+
+multilabel_confusion_matrix(dt_test, pred_lp_1)
+(eval_lp_1 <- multilabel_evaluate(dt_test, pred_lp_1, measures = c("example-based", "micro-based")))
+```
+
+Accuracy na poziomie 85%.
+
+#### Classifier chains model
+
+```{r}
+cc_train1 <- ecc(dt_train1, "SVM", seed = 123)
+pred_cc_1 <- predict(cc_train1, dt_test)
+
+multilabel_confusion_matrix(dt_test, pred_cc_1)
+(eval_cc_1 <- multilabel_evaluate(dt_test, pred_cc_1, measures = c("example-based", "micro-based")))
+```
+
+Accuracy na poziomie 65%.
+
+### Model z upsamplingiem
+
+```{r}
+set.seed(44)
+no_failure <- df_train_trans |> 
+  filter(death == 0, hospdead == 0, sfdm2 == 0) |> 
+  slice_sample(n = 500) 
+
+dt_to_smote <- df_train_trans |> 
+  filter(death == 1 | hospdead == 1 | sfdm2 == 1 | sfdm2 == 2 | sfdm2 == 3 | sfdm2 == 4 | sfdm2 == 5) |>
+  select(everything()) 
+
+ds <- mldr_from_dataframe(dt_to_smote, labelIndices = 1:3)
+ds$labelsets
+```
+
+Metoda MLSMOTE działa iteracyjnie i jedna iteracja nie doprowadza jeszcze do zbalansowania próby. Dlatego zastosuję ją 7 razy.
+
+```{r}
+ds |> head()
+ds_smote <- MLSMOTE(D = ds, k = 5, tableVDM = ds) #chyba bez VDM powinno być, ale nie działa bez niego
+
+for(i in 1:6){   
+  ds_smote <- MLSMOTE(ds_smote, k=5, tableVDM = ds_smote) 
+}
+
+dt_train2 <- readRDS("data_smote.rds") 
+dt_train2$labelsets
+```
+
+#### Binary relevance model
+
+```{r}
+br_train2 <- br(dt_train2, "SVM", seed=123)
+pred_br_2 <- predict(br_train2, dt_test)
+
+multilabel_confusion_matrix(dt_test, pred_br_2)
+(eval_br_2 <- multilabel_evaluate(dt_test, pred_br_2, measures = c("example-based", "micro-based")))
+```
+
+#### Laber powerset model
+
+```{r}
+lp_train2 <- lp(dt_train2, "SVM", seed = 123)
+pred_lp_2 <- predict(lp_train2, dt_test)
+
+multilabel_confusion_matrix(dt_test, pred_lp_2)
+(eval_lp_2 <- multilabel_evaluate(dt_test, pred_lp_2, measures = c("example-based", "micro-based")))
+```
+
+#### Classifier chains model
+
+```{r}
+cc_train2 <- ecc(dt_train2, "SVM", seed = 123)
+pred_cc_2 <- predict(cc_train2, dt_test)
+
+multilabel_confusion_matrix(dt_test, pred_cc_2)
+(eval_cc_2 <- multilabel_evaluate(dt_test, pred_cc_2, measures = c("example-based", "micro-based")))
+```
+
+### Podsumowanie tej części
+
+```{r}
+library(gt)
+data.frame(eval_br_1) |> 
+  bind_cols(eval_br_2, eval_lp_1, eval_lp_2, eval_cc_1, eval_cc_2) |> 
+  rownames_to_column("metric") |> 
+  setNames(c("Metric", "BR without MLSMOTE", "BR with MLSMOTE", "LP without MLSMOTE", "LP with MLSMOTE", "CC without MLSMOTE", "CC with MLSMOTE")) |> 
+  gt() |> 
+  fmt_number(columns = 2:7, decimals = 3)
+```
+
+### Sieć gęsta
+
+```{r}
+model <- keras_model_sequential(input_shape = c(dim(df_train_trans)))
+
+model |> 
+  layer_dense(units = 128, activation = 'relu') |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dropout(0.4) |> 
+  layer_dense(3)
+  
+model |> 
+  compile(
+    loss = "mse",
+    metrics = "mae",
+    optimizer = optimizer_adam()
+  )
+
+model |> summary()
+
+
+history <- model |> fit(
+  x = df_train_trans[,-c(1:3)], y = df_train_trans[,c(1:3)],
+  epochs = 20, 
+  batch_size = 32,
+  validation_split = 0.2
+)
+
+history <- readRDS("zad4_dense_hist.rds")
+plot(history)
+
+model <- load_model_hdf5("zad4_dense.h5")
+
+X.test <- array_reshape(X_test, dim = c(dim(X_test)[1], dim(X_test)[2]*dim(X_test)[3]))
+eval_dense <- model |> 
+  evaluate(X.test, y_test)
+
+sqrt(eval_dense[1])
+```
