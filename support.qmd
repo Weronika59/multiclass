@@ -432,7 +432,7 @@ library(mldr)
 library(mldr.resampling)
 library(utiml)
 setParallel(FALSE)
-setNumCores(4)
+#setNumCores(4)
 
 
 set.seed(44)
@@ -577,15 +577,18 @@ Accuracy na poziomie 65%.
 
 ### Model z upsamplingiem
 
+Aby nie przesadzić z *upsamplingiem*, zastosowany będzie również *downsampling* obserwacji z etykietami o największej częstości ("00000").
+
 ```{r}
 set.seed(44)
+
 no_failure <- df_train_trans |> 
-  filter(death == 0, hospdead == 0, sfdm2 == 0) |> 
+  filter(death == 0, hospdead == 0, sfdm2 == 1) |> 
   slice_sample(n = 500) 
 
 dt_to_smote <- df_train_trans |> 
-  filter(death == 1 | hospdead == 1 | sfdm2 == 1 | sfdm2 == 2 | sfdm2 == 3 | sfdm2 == 4 | sfdm2 == 5) |>
-  select(everything()) 
+  filter(death == 1 | hospdead == 1 | sfdm2 == 2 | sfdm2 == 3 | sfdm2 == 4 | sfdm2 == 5) |>
+  select(PC1, PC2, PC3, PC4, PC5, sex_X1, dzgroup_X2, dzgroup_X3, dzgroup_X4, dzgroup_X5, dzgroup_X6, dzgroup_X7, dzgroup_X8, dzclass_X2, dzclass_X3, dzclass_X4, ca_X1, ca_X2, income_X2, income_X3, income_X4, race_X2, race_X3, race_X4, race_X5, dnr_X1, dnr_X2, diabetes_X1, dementia_X1, everything()) 
 
 ds <- mldr_from_dataframe(dt_to_smote, labelIndices = 1:3)
 ds$labelsets
@@ -594,8 +597,7 @@ ds$labelsets
 Metoda MLSMOTE działa iteracyjnie i jedna iteracja nie doprowadza jeszcze do zbalansowania próby. Dlatego zastosuję ją 7 razy.
 
 ```{r}
-ds |> head()
-ds_smote <- MLSMOTE(D = ds, k = 5, tableVDM = ds) #chyba bez VDM powinno być, ale nie działa bez niego
+ds_smote <- MLSMOTE(D = ds, k = 5) #chyba bez VDM powinno być, ale nie działa bez niego
 
 for(i in 1:6){   
   ds_smote <- MLSMOTE(ds_smote, k=5, tableVDM = ds_smote) 
@@ -649,40 +651,135 @@ data.frame(eval_br_1) |>
 
 ### Sieć gęsta
 
-```{r}
-model <- keras_model_sequential(input_shape = c(dim(df_train_trans)))
+#### Model 1
 
-model |> 
+```{r}
+library(tidymodels)
+str(dane3)
+dane3$death <- as.numeric(dane3$death)
+dane3$hospdead <- as.numeric(dane3$hospdead)
+dane3$sfdm2 <- as.numeric(dane3$sfdm2)
+w <- c()
+for(i in 1:nrow(dane3)){
+  w[i] <- ifelse(dane3$death[i]==1, dane3$death[i] <- 0, dane3$death[i] <- 1)
+}
+dane3$death <- w
+w2 <- c()
+for(i in 1:nrow(dane3)){
+  w2[i] <- ifelse(dane3$hospdead[i]==1, dane3$hospdead[i] <- 0, dane3$hospdead[i] <- 1)
+}
+dane3$hospdead <- w2
+
+split <- initial_split(dane3, prop = 0.7)
+df_train <- training(split)
+df_test <- testing(split)
+
+rec <- recipe(death+hospdead+sfdm2 ~ ., data = df_train) |> 
+  step_normalize(all_numeric_predictors()) |> 
+  step_pca(all_numeric_predictors()) |> 
+  step_dummy(sex, dzgroup, dzclass, ca, income, race, dnr, diabetes, dementia)
+
+df_train_trans <- rec |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
+  select(everything())
+
+df_test_trans <- rec |> 
+  prep() |> 
+  bake(new_data = df_test) |> 
+  select(everything())
+
+train_features <- df_train_trans[,-c(1:3)]
+train_features |> dim()
+train_targets <- df_train_trans[,c(1:3)]
+train_targets |> dim()
+
+test_features <- df_test_trans[,-c(1:3)]
+test_features |> dim()
+test_targets <- df_test_trans[,c(1:3)]
+
+library(keras)
+as_tensor(train_features)
+
+#model
+inputs <- layer_input(batch_shape = list(NULL, 29))
+outputs <- inputs %>%
+  layer_flatten() |> 
   layer_dense(units = 128, activation = 'relu') |> 
   layer_dense(units = 64, activation = 'relu') |> 
   layer_dropout(0.4) |> 
   layer_dense(3)
-  
+model <- keras_model(inputs, outputs)
 model |> 
   compile(
     loss = "mse",
-    metrics = "mae",
+    metrics = "accuracy",
     optimizer = optimizer_adam()
   )
-
 model |> summary()
 
-
+#uczenie
 history <- model |> fit(
-  x = df_train_trans[,-c(1:3)], y = df_train_trans[,c(1:3)],
-  epochs = 20, 
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 40, 
   batch_size = 32,
   validation_split = 0.2
 )
+saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history.rds")
+save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model.h5")
+```
 
-history <- readRDS("zad4_dense_hist.rds")
+```{r}
+#history <- readRDS("zad4_dense_hist.rds")
 plot(history)
 
-model <- load_model_hdf5("zad4_dense.h5")
+#model <- load_model_hdf5("zad4_dense.h5")
 
-X.test <- array_reshape(X_test, dim = c(dim(X_test)[1], dim(X_test)[2]*dim(X_test)[3]))
-eval_dense <- model |> 
-  evaluate(X.test, y_test)
+eval_model <- model |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.32, accuracy=0.65
 
-sqrt(eval_dense[1])
+sqrt(eval_model[1]) #loss=0.57
+```
+
+#### Model 2
+
+```{r}
+#model
+inputs <- layer_input(batch_shape = list(NULL, 29))
+outputs <- inputs %>%
+  #layer_flatten() |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  #layer_dropout(0.4) |> 
+  layer_dense(3)
+model2 <- keras_model(inputs, outputs)
+model2 |> 
+  compile(
+    loss = "mse",
+    metrics = "accuracy",
+    optimizer = optimizer_adam()
+  )
+model2 |> summary()
+
+#uczenie
+history2 <- model2 |> fit(
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 40, 
+  batch_size = 32,
+  validation_split = 0.2
+)
+saveRDS(history2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2.rds")
+save_model_hdf5(model2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2.h5")
+
+#evaluation
+#history <- readRDS("zad4_dense_hist.rds")
+plot(history2)
+
+#model <- load_model_hdf5("zad4_dense.h5")
+
+eval_model <- model2 |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.37, mae=0.64
+
+sqrt(eval_model[1]) #loss=0.61
 ```
