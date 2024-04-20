@@ -431,7 +431,7 @@ library(tidymodels)
 library(mldr)
 library(mldr.resampling)
 library(utiml)
-setParallel(FALSE)
+#setParallel(FALSE)
 #setNumCores(4)
 
 
@@ -582,13 +582,19 @@ Aby nie przesadzić z *upsamplingiem*, zastosowany będzie również *downsamp
 ```{r}
 set.seed(44)
 
-no_failure <- df_train_trans |> 
-  filter(death == 0, hospdead == 0, sfdm2 == 1) |> 
-  slice_sample(n = 500) 
+#no_failure <- df_train_trans |> 
+#  filter(death == 0, hospdead == 0) |> 
+#  slice_sample(n = 500) 
+
+df_train_trans$death |> unique()
+df_train_trans$hospdead |> unique()
+df_train_trans$sfdm2 |> unique()
+dt_to_smote
+
 
 dt_to_smote <- df_train_trans |> 
-  filter(death == 1 | hospdead == 1 | sfdm2 == 2 | sfdm2 == 3 | sfdm2 == 4 | sfdm2 == 5) |>
-  select(PC1, PC2, PC3, PC4, PC5, sex_X1, dzgroup_X2, dzgroup_X3, dzgroup_X4, dzgroup_X5, dzgroup_X6, dzgroup_X7, dzgroup_X8, dzclass_X2, dzclass_X3, dzclass_X4, ca_X1, ca_X2, income_X2, income_X3, income_X4, race_X2, race_X3, race_X4, race_X5, dnr_X1, dnr_X2, diabetes_X1, dementia_X1, everything()) 
+  filter(death == 1 | hospdead == 1 | sfdm2 == 1 | sfdm2 == 2 | sfdm2 == 3 | sfdm2 == 4 | sfdm2 == 5) |>
+  select(hospdead, death, everything()) 
 
 ds <- mldr_from_dataframe(dt_to_smote, labelIndices = 1:3)
 ds$labelsets
@@ -597,7 +603,7 @@ ds$labelsets
 Metoda MLSMOTE działa iteracyjnie i jedna iteracja nie doprowadza jeszcze do zbalansowania próby. Dlatego zastosuję ją 7 razy.
 
 ```{r}
-ds_smote <- MLSMOTE(D = ds, k = 5) #chyba bez VDM powinno być, ale nie działa bez niego
+ds_smote <- MLSMOTE(ds, k = 5) #chyba bez VDM powinno być, ale nie działa bez niego
 
 for(i in 1:6){   
   ds_smote <- MLSMOTE(ds_smote, k=5, tableVDM = ds_smote) 
@@ -699,7 +705,6 @@ test_features |> dim()
 test_targets <- df_test_trans[,c(1:3)]
 
 library(keras)
-as_tensor(train_features)
 
 #model
 inputs <- layer_input(batch_shape = list(NULL, 29))
@@ -727,6 +732,8 @@ history <- model |> fit(
 )
 saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history.rds")
 save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model.h5")
+
+history <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history.rds")
 ```
 
 ```{r}
@@ -740,6 +747,8 @@ eval_model <- model |>
 
 sqrt(eval_model[1]) #loss=0.57
 ```
+
+Widoczne jest przeuczenie modelu
 
 #### Model 2
 
@@ -772,6 +781,8 @@ history2 <- model2 |> fit(
 saveRDS(history2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2.rds")
 save_model_hdf5(model2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2.h5")
 
+history2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2.rds")
+
 #evaluation
 #history <- readRDS("zad4_dense_hist.rds")
 plot(history2)
@@ -782,4 +793,156 @@ eval_model <- model2 |>
   evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.37, mae=0.64
 
 sqrt(eval_model[1]) #loss=0.61
+```
+
+Ponowne widoczne przeuczenie modelu.
+
+#### Model 3
+
+```{r}
+#model
+inputs <- layer_input(batch_shape = list(NULL, 29))
+outputs <- inputs %>%
+  #layer_flatten() |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dropout(0.4) |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  #layer_dropout(0.2) |> 
+  layer_dense(units = 128, activation = 'relu') |>
+  #layer_dropout(0.2) |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dropout(0.4) |> 
+  layer_dense(3)
+model3 <- keras_model(inputs, outputs)
+model3 |> 
+  compile(
+    loss = "mse",
+    metrics = "accuracy",
+    optimizer = optimizer_adam()
+  )
+model3 |> summary()
+
+#uczenie
+history3 <- model3 |> fit(
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 40, 
+  batch_size = 32,
+  validation_split = 0.2
+)
+
+saveRDS(history3, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3.rds")
+save_model_hdf5(model3, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3.h5")
+
+plot(history3)
+
+eval_model <- model3 |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.37, acc=0.60
+```
+
+Mniejsze przeuczenie! Ale accuracy około 60% ://
+
+#### Model 4
+
+```{r}
+outputs <- inputs |> 
+  layer_flatten() |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dense(3)
+
+model4 <- keras_model(inputs, outputs)
+model4 |> 
+  compile(
+    loss = "mse",
+    metrics = "accuracy",
+    optimizer = optimizer_adam(learning_rate = 1e-5)
+    
+  )
+model4 |> summary()
+
+#uczenie
+history4 <- model4 |> fit(
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 40, 
+  batch_size = 45,
+  validation_split = 0.2
+)
+
+saveRDS(history4, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history4.rds")
+save_model_hdf5(model4, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model4.h5")
+
+plot(history4)
+
+eval_model <- model4 |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.42, acc=0.63
+```
+
+```{r}
+### to samo co wyżej, ale większa liczba epok
+outputs <- inputs |> 
+  layer_flatten() |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dense(3)
+
+model5 <- keras_model(inputs, outputs)
+model5 |> 
+  compile(
+    loss = "mse",
+    metrics = "accuracy",
+    optimizer = optimizer_adam(learning_rate = 1e-4)
+    
+  )
+
+#uczenie
+history5 <- model5 |> fit(
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 100, 
+  batch_size = 45,
+  validation_split = 0.2
+)
+
+saveRDS(history5, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5.rds")
+save_model_hdf5(model5, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5.h5")
+
+plot(history5)
+
+eval_model <- model5 |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.31, acc=0.64
+```
+
+#### Model 5
+
+```{r}
+model6 <- keras_model_sequential(input_shape = c(NULL, 29))
+
+model6 |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dense(units = 8, activation = 'relu') |> 
+  layer_flatten() |>
+  layer_dense(3)
+  
+model6 |> 
+  compile(
+    loss = "mse",
+    metrics = "accuracy",
+    optimizer = optimizer_nadam(learning_rate = 1e-4)
+  )
+
+#uczenie
+history6 <- model6 |> fit(
+  x = as_tensor(train_features, shape = c(6373, 29)), y = as_tensor(train_targets, shape = c(6373, 3)),
+  epochs = 40, 
+  batch_size = 45,
+  validation_split = 0.2
+)
+
+saveRDS(history6, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history6.rds")
+save_model_hdf5(model6, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model6.h5")
+
+plot(history6)
+
+eval_model <- model6 |> 
+  evaluate(as_tensor(test_features, shape = c(2732, 29)), as_tensor(test_targets, shape = c(2732, 3))) #loss=0.31, acc=0.65
 ```
