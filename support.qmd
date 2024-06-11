@@ -26,6 +26,12 @@ library(caret)
 library(rstatix)
 library(keras)
 library(tensorflow)
+library(tidymodels)
+library(mldr)
+library(mldr.resampling)
+library(utiml)
+library(gt)
+library(RColorBrewer)
 ```
 
 ## Wstęp
@@ -34,30 +40,23 @@ Projekt SUPPORT składał się z dwuletniego prospektywnego badania obserwacyjne
 
 W fazie I badania SUPPORT zebrano dane od pacjentów przyjętych w latach 1989-1991 w celu scharakteryzowania opieki, preferencji dotyczących leczenia i wzorców podejmowania decyzji wśród krytycznie chorych pacjentów. Służyła również jako wstępny krok do opracowania strategii interwencji w celu poprawy opieki nad krytycznie chorymi pacjentami oraz do budowy modeli statystycznych do przewidywania rokowania i stanu funkcjonalnego pacjenta.
 
-Interwencja została wdrożona w II fazie badania SUPPORT, do której pacjenci byli przyjmowani w latach 1992-1994. Interwencja fazy II dostarczyła lekarzom dokładnych informacji prognostycznych na temat przyszłej zdolności funkcjonalnej, prawdopodobieństwa przeżycia do sześciu miesięcy oraz preferencji pacjentów dotyczących opieki u schyłku życia. Dodatkowo, w ramach interwencji zapewniono wykwalifikowaną pielęgniarkę w celu określenia preferencji pacjenta, przedstawienia prognoz, zwiększenia zrozumienia, umożliwienia opieki paliatywnej i ułatwienia wcześniejszego planowania. Oczekiwano, że interwencja zwiększy komunikację, skutkując wcześniejszymi decyzjami o zleceniu reanimacji, skróci czas spędzany przez pacjentów w niepożądanych stanach (np. na oddziale intensywnej terapii, pod respiratorem i w śpiączce), zwiększy zrozumienie przez lekarzy preferencji pacjentów dotyczących opieki, zmniejszy ból pacjentów i zmniejszy zużycie zasobów szpitalnych.\
-Gromadzenie danych w obu fazach SUPPORT składało się z kwestionariuszy podawanych pacjentom, ich zastępcom i lekarzom, a także przeglądów kart w celu wyodrębnienia informacji klinicznych, leczenia i decyzji.
+Interwencja została wdrożona w II fazie badania SUPPORT, do której pacjenci byli przyjmowani w latach 1992-1994. Interwencja fazy II dostarczyła lekarzom dokładnych informacji prognostycznych na temat przyszłej zdolności funkcjonalnej, prawdopodobieństwa przeżycia do sześciu miesięcy oraz preferencji pacjentów dotyczących opieki u schyłku życia. Dodatkowo, w ramach interwencji zapewniono wykwalifikowaną pielęgniarkę w celu określenia preferencji pacjenta, przedstawienia prognoz, zwiększenia zrozumienia, umożliwienia opieki paliatywnej i ułatwienia wcześniejszego planowania. Oczekiwano, że interwencja zwiększy komunikację, skutkując wcześniejszymi decyzjami o zleceniu reanimacji, skróci czas spędzany przez pacjentów w niepożądanych stanach (np. na oddziale intensywnej terapii, pod respiratorem i w śpiączce), zwiększy zrozumienie przez lekarzy preferencji pacjentów dotyczących opieki, zmniejszy ból pacjentów i zmniejszy zużycie zasobów szpitalnych.
 
-Pacjenci objęci programem SUPPORT byli obserwowani przez sześć miesięcy po włączeniu do badania. Ci, którzy nie zmarli w ciągu sześciu miesięcy lub zostali utraceni w wyniku obserwacji, zostali dopasowani do National Death Index w celu zidentyfikowania zgonów do 1997 roku. Pacjenci, którzy nie zmarli w ciągu jednego roku lub utracili możliwość obserwacji, zostali dopasowani do National Death Index w celu zidentyfikowania zgonów do 1997 r.
-
-Wszyscy pacjenci w pięciu ośrodkach medycznych w Stanach Zjednoczonych, którzy spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z posocznicą. SUPPORT to połączenie pacjentów z 2 badań, z których każde trwało 2 lata. Pierwsza faza dotyczyła 4 301 pacjentów, podczas gdy druga faza dotyczyła 4 804 pacjentów. Pod względem czasu, badania te zostały przeprowadzone w 1989 r. (12 czerwca) do 1991 r. (11 czerwca) dla fazy I oraz w 1992 r. (7 stycznia) do 1994 r. (24 stycznia).
+Wszyscy pacjenci w pięciu ośrodkach medycznych w Stanach Zjednoczonych spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z posocznicą. SUPPORT to połączenie pacjentów z dwóch badań, z których każde trwało 2 lata. Pierwsza faza dotyczyła 4 301 pacjentów, podczas gdy druga faza dotyczyła 4 804 pacjentów. Pod względem czasu, badania te zostały przeprowadzone w 1989 r. (12 czerwca) do 1991 r. (11 czerwca) dla fazy I oraz w 1992 r. (7 stycznia) do 1994 r. (24 stycznia).
 
 ## Cel badania
 
-Opracowanie i walidacja modelu prognostycznego, który szacuje przeżycie w okresie 180 dni dla ciężko chorych hospitalizowanych dorosłych (faza I SUPPORT) oraz porównanie przewidywań tego modelu z przewidywaniami istniejącego systemu prognostycznego i niezależnymi szacunkami lekarzy (faza II SUPPORT).
-
-Celem jest określenie 2- i 6-miesięcznych wskaźników przeżycia tych pacjentów w oparciu o kilka informacji fizjologicznych, demograficznych i dotyczących ciężkości choroby. Jest to ważny problem, ponieważ odnosi się do rosnących obaw narodowych dotyczących utraty kontroli przez pacjentów pod koniec życia. Umożliwia wcześniejsze podejmowanie decyzji i planowanie w celu zmniejszenia częstotliwości mechanicznego, bolesnego i przedłużającego się procesu umierania.
-
-Celem tego badania jest zbudowanie zaawansowanego modelu uczenia maszynowego prognozującego stopień niepełnosprawności funkcjonalnej oraz prawdopodobieństwo śmierci w szpitalu, jak i ogólnie podczas procesu przeprowadzonego badania(???). Pomoże to głównie lekarzom i pielęgnioarkom oraz osobom opiekującym się chorymi we wcześniejszym podejmowaniu odpowiednich decyzji co do procesu leczenia i planowaniu w celu zmniejszenia częstotliwości mechanicznego, bolesnego i przedłużającego się procesu umierania.
+Celem tego badania jest zbudowanie zaawansowanego modelu uczenia maszynowego prognozującego stopień niepełnosprawności funkcjonalnej pacjenta oraz prawdopodobieństwo śmierci (ogólnie), jak i w szpitalu. Będzie to pomocne głównie lekarzom i pielęgnioarkom oraz osobom opiekującym się chorymi we wcześniejszym podejmowaniu odpowiednich decyzji co do procesu leczenia i planowania w celu zmniejszenia częstotliwości mechanicznego, bolesnego i przedłużającego się procesu umierania.
 
 ## Opis zbioru badawczego
 
-Zbiór `SUPPORT2` pochodzi z witryny \[UCI\]( https://archive.ics.uci.edu/dataset/880/support2) i obejmuje 9105 pacjentów w stanie krytycznym z 5 ośrodków medycznych w Stanach Zjednoczonych. Każdy wiersz dotyczy rekordów hospitalizowanych pacjentów, którzy spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z sepsą.
+Zbiór `SUPPORT2` pochodzi z witryny \[UCI\]( https://archive.ics.uci.edu/dataset/880/support2) i obejmuje 9105 pacjentów w stanie krytycznym z 5 ośrodków medycznych w Stanach Zjednoczonych. Każdy wiersz dotyczy hospitalizowanych pacjentów, którzy spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z sepsą.
 
 Zbiór zawiera następujące informacje na temnat hospitalizowanych pacjetntów:
 
 -   `age` - wiek pacjenta w latach,
 
--   `death` (**target**) - Śmierć w dowolnym momencie aż do 31 grudnia 1994 roku; niektórzy pacjenci zostali wypisani przed zakończeniem badania i nie byli monitorowani, ale autorzy sprawdzili informacje o zgonach (0/1)///prawdopodobieństwo śmierci (0/1),
+-   `death` (**target**) - śmierć w dowolnym momencie aż do 31 grudnia 1994 roku; niektórzy pacjenci zostali wypisani przed zakończeniem badania i nie byli monitorowani, ale autorzy sprawdzili informacje o zgonach (0/1),
 
 -   `sex` - płeć pacjenta (*male/female*),
 
@@ -65,19 +64,19 @@ Zbiór zawiera następujące informacje na temnat hospitalizowanych pacjetntów:
 
 -   `slos` - liczba dni od rozpoczęcia badania do wypisu ze szpitala,
 
--   `d.time` - liczba dni obserwacji (time until death),
+-   `d.time` - liczba dni obserwacji do momentu śmierci pacjenta,
 
 -   `dzgroup` - podkategorie choroby pacjenta - obejmują ARF/MOSF z sepsą, CHF, POChP, marskość wątroby, raka okrężnicy, śpiączkę, raka płuc, MOSF z maligną (poziomy *Lung Cancer*, *Cirrhosis*, *ARF/MOSF w/Sepsis*, *Coma*, *CHF*, *Colon Cancer*, *COPD*, *MOSF w/Malig*),
 
 -   `dzclass` - kategoria choroby pacjenta (poziomy *ARF/MOSF*, *COPD/CHF/Cirrhosis*, *Cancer*, *Coma*),
 
--   `num.co` - liczba jednoczesnych chorób (lub chorób współistniejących) występujących u pacjenta; wartości są porządkowe, przy czym wyższe wartości wskazują na gorszy stan i szanse na przeżycie,
+-   `num.co` - liczba jednoczesnych chorób (lub chorób współistniejących) występujących u pacjenta; wartości są porządkowe, przy czym wyższe wartości wskazują na gorszy stan i mniejsze szanse na przeżycie,
 
 -   `edu` - lata edukacji (liczba z zakresu od 11 do 28),
 
--   `income` - dochód pacjenta; poziomy *\$11-\$25k*, *\$25-\$50k*, *\>\$50k*, *poniżej \$11k*,
+-   `income` - dochód pacjenta (poziomy *\$11-\$25k*, *\$25-\$50k*, *\>\$50k*, *poniżej \$11k*),
 
--   `scoma` - Wynik śpiączki w 3. dniu badania SUPPORT na podstawie skali Glasgow (przewidywany na podstawie modelu); liczba z zakresu 0-100,
+-   `scoma` - wynik śpiączki w 3. dniu badania SUPPORT na podstawie skali Glasgow (przewidywany na podstawie modelu); liczba z zakresu 0-100,
 
 -   `charges` - opłaty szpitalne,
 
@@ -85,9 +84,9 @@ Zbiór zawiera następujące informacje na temnat hospitalizowanych pacjetntów:
 
 -   `totmcst` - całkowity koszt mikro,
 
--   `avtisst` - średni wynik TISS (Therapeutic Intervention Scoring System) - to metoda obliczania kosztów na oddziale intensywnej terapii i oddziale opieki pośredniej,
+-   `avtisst` - średni wynik TISS (*Therapeutic Intervention Scoring System*) - to metoda obliczania kosztów na oddziale intensywnej terapii i oddziale opieki pośredniej,
 
--   `race` - rasa pacjenta; poziomy *asian*, *black*, *hispanic*, *missing*, *other*, *white*.
+-   `race` - rasa pacjenta (poziomy *asian*, *black*, *hispanic*, *missing*, *other*, *white*),
 
 -   `meanbp` - średnie ciśnienie tętnicze krwi pacjenta mierzone w dniu 3.,
 
@@ -125,19 +124,19 @@ Zbiór zawiera następujące informacje na temnat hospitalizowanych pacjetntów:
 
     Objaśnienie poziomów zmiennej:
 
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | Nazwa w zbiorze danych   | Poziom niepełnosprawności | Opis                                                                                                                                                                                                                                      |
-    +==========================+===========================+===========================================================================================================================================================================================================================================+
-    | no(Month 2 and SIP pres) | 1                         | Pacjent przeżył 2 miesiące, aby móc przeprowadzić 2-miesięczny wywiad, a na podstawie tego wywiadu nie stwierdzono oznak umiarkowanej lub ciężkiej niepełnosprawności funkcjonalnej.                                                      |
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | adl\>=4 (\>=5 if sur)    | 2                         | Pacjent nie był w stanie wykonywać 4 lub więcej czynności życia codziennego w 2. miesiącu po rozpoczęciu badania. Jeśli nie przeprowadzono wywiadu z pacjentem, ale z jego zastępcą, punktem odcięcia dla niepełnosprawności było ADL ³ 5 |
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | SIP\>=30                 | 3                         | Całkowity wynik profilu wpływu choroby po 2 miesiącach ³ 30                                                                                                                                                                               |
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | Coma or Intub            | 4                         | Pacjent zaintubowany lub w śpiączce po 2 miesiącach                                                                                                                                                                                       |
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | \<2 mo. follow-up        | 5                         | Pacjent zmarł przed upływem 2 miesięcy od rozpoczęcia badania                                                                                                                                                                             |
-    +--------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | Nazwa w zbiorze danych   | Poziom niepełnosprawności | Opis                                                                                                                                  |
+    +==========================+===========================+=======================================================================================================================================+
+    | no(Month 2 and SIP pres) | 1                         | Po 2-miesięcznwj obserwacji, a następnie wywiadzie, nie stwierdzono oznak umiarkowanej lub ciężkiej niepełnosprawności funkcjonalnej. |
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | adl\>=4 (\>=5 if sur)    | 2                         | Pacjent nie był w stanie wykonywać 4 lub więcej czynności życia codziennego w 2. miesiącu po rozpoczęciu badania.                     |
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | SIP\>=30                 | 3                         | Całkowity wynik profilu wpływu choroby po 2 miesiącach.                                                                               |
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | Coma or Intub            | 4                         | Pacjent zaintubowany lub w śpiączce po 2 miesiącach.                                                                                  |
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | \<2 mo. follow-up        | 5                         | Pacjent zmarł przed upływem 2 miesięcy od rozpoczęcia badania.                                                                        |
+    +--------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
 
 -   `adlsc` - imputowany indeks czynności życia codziennego skalibrowany do surogatu.
 
@@ -187,9 +186,11 @@ Poniżej zaprezentowano pięć początkowych obserwacji zbioru badawczego.
 
 ```{r}
 dane <- read.csv("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\support2.csv", na.strings = c("NA",""))
+```
 
+```{r}
 options(knitr.kable.NA='NA')
-head(dane, 5) |> kable() |> kable_styling()
+head(dane, 5) |> kable(caption = "Dane pochodzące z witryny UCI") |> kable_styling()
 ```
 
 Uwzględniając uwagi zawarte na [stronie](https://hbiostat.org/data/repo/supportdesc), ze zbioru zostaną usunięte zmienne `aps`, `sps`, `surv2m`, `surv6m`, `prg2m`, `prg6m`, `dnr` oraz `dnrday`.
@@ -200,10 +201,10 @@ dane <- dane[,-c(18:21,26:29)]
 
 ```{r}
 options(knitr.kable.NA='NA')
-head(dane, 5) |> kable() |> kable_styling()
+head(dane, 5) |> kable(caption = "Dane bez wybranych kolumn") |> kable_styling()
 ```
 
-Zmienna `wblc` (liczba białych krwinek) zostanie także wyrażona w tysiącach.
+Zmienna `wblc` (liczba białych krwinek) zostanie wyrażona w tysiącach dla lepszej interpretacji.
 
 ```{r}
 dane$wblc <- dane$wblc*1000
@@ -236,7 +237,7 @@ Poniżej przedstawiono 3 przykładowe przypadki pacjentów, dla których lata ed
 dane[dane$edu==0,] |> drop_na(age) |> head(3) |> kable() |> kable_styling()
 ```
 
-Intuicja podpowiada, że być może są to osoby starsze, które z różnych względów w ich wieku młodzieńczym nie mogły uczęszczać do szkoły. Rasa pacjentów także może sugerować skąd pochodzą i stąd wyciągnąć wniosek o ewentualnym braku edukacji na tym terenie.
+Intuicja podpowiada, że być może są to osoby starsze, które z różnych względów w ich wieku młodzieńczym nie mogły uczęszczać do szkoły. Rasa pacjentów także może sugerować skąd pochodzą i stąd można wyciągnąć wniosek o ewentualnym braku edukacji na tym terenie.
 
 ```{r}
 options(knitr.kable.NA='NA')
@@ -245,33 +246,21 @@ dane[dane$edu==0,] |> drop_na(age) |> arrange(age) |> kable(caption = "Pacjenci 
 
 Jednak wśród wyróżniowych 43 pacjentów najmłodszy z nich ma 25 lat i większość z nich jest rasy białej. Natomiast ciekawą obserwacją jest to, że niemal każdy z tych zadeklarował roczny przychód poniżej 11 tys. dolarów, więc być może nie mogli oni pozwolić sobie na edukację ze względów finansowych. Warto tu także przypomnieć, że początki badania miałyu miejsce w roku 1989.
 
-43 wyróżnione przypadki ze względu na zmienną `edu` nie są dużą liczbą i ze względu na to, że są to "podejrzane" obserwacje, możnaby podjać decyzję o ich usunięciu ze zbioru danych (stanowią one 0,47% całego zbioru), jednak ze względu na to, że każdy zbadany pacjent niesie za sobą konkretne informacje, a liczba lat edukacji nie jest jednym z głównych czynników tego badania, co bardziej względy medyczne, nie zostaną one usunięte ze zbioru.
+43 wyróżnione przypadki ze względu na zmienną `edu` nie są dużą liczbą i ze względu na to, że są to "podejrzane" obserwacje, możnaby podjać decyzję o ich usunięciu ze zbioru danych (stanowią one 0,47% całego zbioru), jednak ze względu na to, że każdy zbadany pacjent niesie za sobą konkretne informacje, a liczba lat edukacji nie jest jednym z głównych czynników w tym badaniu, co bardziej względy medyczne, nie zostaną one usunięte ze zbioru.
 
 Wracając do tabeli ze statystykami opisowymi, zwracajac uwagę na koszty, możemy dostrzec, że minimalna wartość całkowitego kosztu mikro (`totmcst`) jest ujemna, co oznacza, że jest conajmniej jeden pacjent z zadłużeniem. Jest także pacjent, który za pobyt w szpitalu zapłacił niemal 1,5 mln dolarów (`charges`=1435423).
 
 Zwracając uwagę na zmienne dotyczące zdrowia pacjentów, możemy dostrzec, że zmienne `meanbp` , `wblc`, `hrt`, `resp`, `glucose`, `urine`, `adlp`, `adls` oraz `adlsc` swoją najmniejszą wartość mają równą 0, co może świadczyć o tym, że pacjent nie żyje, a na pewno są to podejrzane przypadki.
 
 ```{r}
-dane[dane$meanbp==0,] |> nrow() #52
-dane[dane$wblc==0,] |> nrow() #222
-dane[dane$hrt==0,] |> nrow() #84
-dane[dane$resp==0,] |> nrow() #66
-dane[dane$glucose==0,] |> nrow() #4501
-dane[dane$urine==0,] |> nrow() #4955
-dane[dane$adlp==0,] |> nrow() #7490
-dane[dane$adls==0,] |> nrow() #5975
-dane[dane$adlsc==0,] |> nrow() #3108
-
 dane[dane$meanbp==0 | dane$wblc==0 | dane$hrt==0 | dane$resp==0 | dane$glucose==0 | dane$urine==0 | dane$urine==0 | dane$adlp==0 | dane$adls==0 | dane$adlsc==0,] |> drop_na(age) |> nrow() #4014
 ```
 
-Obserwacji, dla których wymienione wyżej zmienne wynoszą 0, jest 4014. Jest to ponad 40% całego zbioru danych. Poza tym, podczas trwania badania, jak to było opisane we wstępie, pacjenci umierali i takie dane są wręcz naturalne. Dla przykładu, gdy średnie ciśnienie tętnicze wynosi 0, większość z tych pacjentów w kolumnie `hospdead` (śmierć w szpitalu) oraz `death` (śmierć w dowolnym momencie) ma wartość 1 (nie żyje). Podjęto zatem decyzję o nieusuwaniu tych przypadków ze zbioru danych.
+Obserwacji, dla których wymienione wyżej zmienne wynoszą 0, jest łącznie 4014. Jest to ponad 40% całego zbioru danych. Poza tym, podczas trwania badania, jak to było opisane we wstępie, pacjenci umierali i takie dane są wręcz naturalne. Dla przykładu, gdy średnie ciśnienie tętnicze wynosi 0, większość z tych pacjentów w kolumnie `hospdead` (śmierć w szpitalu) oraz `death` (śmierć w dowolnym momencie) ma wartość 1 (nie żyje). Podjęto zatem decyzję o nieusuwaniu tych przypadków ze zbioru danych.
 
 Ponadto, jest 11 zmiennych, dla których liczba braków danych przekracza tysiąc - należy przeprowadzić dla nich odpowiednie metody ich imputacji.
 
-Przed przystąpieniem do prezentacji poziomów zmiennych kategorycznych, zostaną wykonane odpowiednie ich przekształcenia, aby prawidłowo je zakodować(?).
-
-Poziomy zmiennych `death`, `sex`, `hospdead`, `dzgroup`, `dzclass`, `income`, `race`, `diabetes`, `dementia`, `ca` oraz `sfdm2` zostaną odpowienio przekształcone na liczby oraz zakodowane(?) jako zmienne kategoryczne.
+Przed przystąpieniem do prezentacji poziomów zmiennych kategorycznych, zostaną wykonane odpowiednie ich przekształcenia w postaci zakodowania ich jako zmienne typu `factor`.
 
 ```{r}
 dane$death <- as.factor(dane$death) 
@@ -290,93 +279,93 @@ dane$race <- ifelse(dane$race=="white", 1, ifelse(dane$race=="black", 2, ifelse(
 dane$race <- as.factor(dane$race) 
 dane$ca <- ifelse(dane$ca=="no", 0, ifelse(dane$ca=="yes", 1, 2)) 
 dane$ca <- as.factor(dane$ca) 
-dane$sfdm2 <- ifelse(dane$sfdm2=="<2 mo. follow-up", 1, ifelse(dane$sfdm2=="no(M2 and SIP pres)", 2, ifelse(dane$sfdm2=="SIP>=30", 3, ifelse(dane$sfdm2=="adl>=4 (>=5 if sur)", 4, ifelse(dane$sfdm2=="Coma or Intub", 5, NA))))) 
+dane$sfdm2 <- ifelse(dane$sfdm2=="<2 mo. follow-up", 0, ifelse(dane$sfdm2=="no(M2 and SIP pres)", 1, ifelse(dane$sfdm2=="SIP>=30", 2, ifelse(dane$sfdm2=="adl>=4 (>=5 if sur)", 3, ifelse(dane$sfdm2=="Coma or Intub", 4, NA))))) 
 dane$sfdm2 <- as.factor(dane$sfdm2)
 ```
 
 Tabela poniżej przedstawia informacje o sposobie zakodowania poszczególnych poziomów zmiennych kategorycznych.
 
-+----------------+------------------+-----------------------+
-| Nazwa zmiennej | Poziomy zmiennej | Opis                  |
-+================+==================+=======================+
-| `death`        | 0                | no                    |
-|                |                  |                       |
-|                | 1                | yes                   |
-+----------------+------------------+-----------------------+
-| `hospdead`     | 0                | no                    |
-|                |                  |                       |
-|                | 1                | yes                   |
-+----------------+------------------+-----------------------+
-| `diabetes`     | 0                | no                    |
-|                |                  |                       |
-|                | 1                | yes                   |
-+----------------+------------------+-----------------------+
-| `dementia`     | 0                | no                    |
-|                |                  |                       |
-|                | 1                | yes                   |
-+----------------+------------------+-----------------------+
-| `sex`          | 0                | male                  |
-|                |                  |                       |
-|                | 1                | female                |
-+----------------+------------------+-----------------------+
-| `dzgroup`      | 1                | Lung Cancer           |
-|                |                  |                       |
-|                | 2                | Cirrhosis             |
-|                |                  |                       |
-|                | 3                | ARF/MOSF w/Sepsis     |
-|                |                  |                       |
-|                | 4                | Coma                  |
-|                |                  |                       |
-|                | 5                | CHF                   |
-|                |                  |                       |
-|                | 6                | Colon Cancer          |
-|                |                  |                       |
-|                | 7                | COPD                  |
-|                |                  |                       |
-|                | 8                | MOSF w/Malig          |
-+----------------+------------------+-----------------------+
-| `dzclass`      | 1                | Cancer                |
-|                |                  |                       |
-|                | 2                | COPD/CHF/Cirrhosis    |
-|                |                  |                       |
-|                | 3                | ARF/MOSF              |
-|                |                  |                       |
-|                | 4                | Coma                  |
-+----------------+------------------+-----------------------+
-| `income`       | 1                | under \$11k           |
-|                |                  |                       |
-|                | 2                | \$11-\$25k            |
-|                |                  |                       |
-|                | 3                | \$25-\$50k            |
-|                |                  |                       |
-|                | 4                | \>\$50k               |
-+----------------+------------------+-----------------------+
-| `race`         | 1                | white                 |
-|                |                  |                       |
-|                | 2                | black                 |
-|                |                  |                       |
-|                | 3                | asian                 |
-|                |                  |                       |
-|                | 4                | hispanic              |
-|                |                  |                       |
-|                | 5                | other                 |
-+----------------+------------------+-----------------------+
-| `ca`           | 0                | no                    |
-|                |                  |                       |
-|                | 1                | yes                   |
-|                |                  |                       |
-|                | 2                | metastatic            |
-+----------------+------------------+-----------------------+
-| `sfdm2`        | 1                | \<2 mo. follow-up     |
-|                |                  |                       |
-|                | 2                | no(M2 and SIP pres)   |
-|                |                  |                       |
-|                | 3                | SIP\>=30              |
-|                |                  |                       |
-|                | 4                | adl\>=4 (\>=5 if sur) |
-|                |                  |                       |
-|                | 5                | Coma or Intub         |
-+----------------+------------------+-----------------------+
++--------------------+----------------------+-----------------------+
+| **Nazwa zmiennej** | **Poziomy zmiennej** | **Znaczenie**         |
++--------------------+----------------------+-----------------------+
+| `death`            | 0                    | no                    |
+|                    |                      |                       |
+|                    | 1                    | yes                   |
++--------------------+----------------------+-----------------------+
+| `hospdead`         | 0                    | no                    |
+|                    |                      |                       |
+|                    | 1                    | yes                   |
++--------------------+----------------------+-----------------------+
+| `diabetes`         | 0                    | no                    |
+|                    |                      |                       |
+|                    | 1                    | yes                   |
++--------------------+----------------------+-----------------------+
+| `dementia`         | 0                    | no                    |
+|                    |                      |                       |
+|                    | 1                    | yes                   |
++--------------------+----------------------+-----------------------+
+| `sex`              | 0                    | male                  |
+|                    |                      |                       |
+|                    | 1                    | female                |
++--------------------+----------------------+-----------------------+
+| `dzgroup`          | 1                    | Lung Cancer           |
+|                    |                      |                       |
+|                    | 2                    | Cirrhosis             |
+|                    |                      |                       |
+|                    | 3                    | ARF/MOSF w/Sepsis     |
+|                    |                      |                       |
+|                    | 4                    | Coma                  |
+|                    |                      |                       |
+|                    | 5                    | CHF                   |
+|                    |                      |                       |
+|                    | 6                    | Colon Cancer          |
+|                    |                      |                       |
+|                    | 7                    | COPD                  |
+|                    |                      |                       |
+|                    | 8                    | MOSF w/Malig          |
++--------------------+----------------------+-----------------------+
+| `dzclass`          | 1                    | Cancer                |
+|                    |                      |                       |
+|                    | 2                    | COPD/CHF/Cirrhosis    |
+|                    |                      |                       |
+|                    | 3                    | ARF/MOSF              |
+|                    |                      |                       |
+|                    | 4                    | Coma                  |
++--------------------+----------------------+-----------------------+
+| `income`           | 1                    | under \$11k           |
+|                    |                      |                       |
+|                    | 2                    | \$11-\$25k            |
+|                    |                      |                       |
+|                    | 3                    | \$25-\$50k            |
+|                    |                      |                       |
+|                    | 4                    | \>\$50k               |
++--------------------+----------------------+-----------------------+
+| `race`             | 1                    | white                 |
+|                    |                      |                       |
+|                    | 2                    | black                 |
+|                    |                      |                       |
+|                    | 3                    | asian                 |
+|                    |                      |                       |
+|                    | 4                    | hispanic              |
+|                    |                      |                       |
+|                    | 5                    | other                 |
++--------------------+----------------------+-----------------------+
+| `ca`               | 0                    | no                    |
+|                    |                      |                       |
+|                    | 1                    | yes                   |
+|                    |                      |                       |
+|                    | 2                    | metastatic            |
++--------------------+----------------------+-----------------------+
+| `sfdm2`            | 0                    | \<2 mo. follow-up     |
+|                    |                      |                       |
+|                    | 1                    | no(M2 and SIP pres)   |
+|                    |                      |                       |
+|                    | 2                    | SIP\>=30              |
+|                    |                      |                       |
+|                    | 3                    | adl\>=4 (\>=5 if sur) |
+|                    |                      |                       |
+|                    | 4                    | Coma or Intub         |
++--------------------+----------------------+-----------------------+
 
 Poniżej przedstawiono 5 początkowych wierszy danych po wymienionych wyżej transformacjach.
 
@@ -385,7 +374,7 @@ options(knitr.kable.NA='NA')
 head(dane, 5) |> kable() |> kable_styling()
 ```
 
-Dodatkowo, dla późniejszego ułatwienia interpretacji/wyciągania wniosków, trzy zmienne wynikowe `death`, `hospdead` oraz `sfdm2` zostaną umieszczone jako trzy ostatnie kolumny w tym zbiorze danych.
+Dodatkowo, dla późniejszego ułatwienia wyciągania wniosków w dalszych etapach badania, trzy zmienne wynikowe: `death`, `hospdead` oraz `sfdm2`zostaną umieszczone jako trzy ostatnie kolumny w tym zbiorze danych.
 
 ```{r}
 dane <- dane[,c(1,3,5:37,39,2,4,38)]
@@ -400,10 +389,10 @@ Zatem możliwe poziomy oraz ich liczby wystąpień dla każdej zmiennej kategory
 
 ```{r}
 options(knitr.kable.NA='')
-summary(dane[,c("death", "sex", "hospdead", "dzgroup", "dzclass", "income", "race", "diabetes", "dementia", "ca", "sfdm2")]) %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
+summary(dane[,c("sex", "dzgroup", "dzclass", "income", "race", "diabetes", "dementia", "ca", "death", "hospdead", "sfdm2")]) %>% kable() %>% kable_styling(full_width = T, bootstrap_options  = "striped")
 ```
 
-Na podstawie powyższej tabeli, widzimy, że w zmiennych `income` oraz `sfdm2` liczba braków danych jest duża (ponad tysiąc). Ponadto większość widocznych zmiennych kategorycznych charakteryzuje się niezbalansowaniem klasowym. Warto będzie rozważyć metody up-/downsamplingu.
+Na podstawie powyższej tabeli, widzimy, że w zmiennych `income` oraz `sfdm2` liczba braków danych jest duża (ponad tysiąc). Ponadto większość widocznych zmiennych kategorycznych charakteryzuje się niezbalansowaniem klasowym, co może mieć wpływ na wyniki zbudowanego modelu w późniejszym etapie.
 
 #### Braki danych
 
@@ -411,17 +400,14 @@ Poniżej zaprezentowana jest liczba braków danych w każdej z kolumn.
 
 ```{r}
 braki <- colSums(is.na(dane)) 
-
 braki <- cbind(braki)
-
 colnames(braki) <- "Liczba braków"
-
-braki %>% kable() %>% kable_styling(full_width = F, bootstrap_options  = "striped")
+braki |> kable()|> kable_styling(full_width = F, bootstrap_options  = "striped")
 ```
 
 Jak widać, braki danych pojawiają się w kolumnach: `scoma`, `meanbp`, `hrt`, `resp`, `temp`, `sod` (tylko 1), `avtisst`, `race`, `crea` (do 100), `charges`, `totcst`, `wblc` (od 101 do 1000), `edu`, `income`,`totmcst`, `pafi`, `alb`, `bili`, `ph`, `glucose`, `bun`, `urine`, `adlp`, `adls`, `sfdm2` (ponad tysiąc).
 
-Aby przeprowadzić odpowiednią metodę imputacji braków danych, zostaną zbadane rozkłady poszczególnych zmiennych (numerycznych).
+Aby przeprowadzić odpowiednią metodę imputacji braków danych, zostaną zbadane rozkłady poszczególnych zmiennych - na początku numerycznych.
 
 ```{r}
 dane |> select(c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
@@ -429,7 +415,6 @@ dane |> select(c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "t
   ggplot(aes(value, fill = name)) +
   geom_histogram(bins = 15, color = "white")+
   facet_wrap(~name, scales = "free")+
-  labs(fill = "zmienne numeryczne")+
   theme(legend.position = "none")
 ```
 
@@ -439,21 +424,20 @@ Na podstawie powyższych rozkładów zmiennych numerycznych, widzimy, że:
 
 -   prawostronnie asymetryczny jest rozkład zmiennych: `adlp`, `adls`, `adlsc`, `alb`, `avtisst`, `bili`, `bun`, `charges`, `crea`, `d.time`, `glucose`, `hday`, `hrt`, `num.co`, `pafi`, `resp`, `scoma`, `slos`, `totcst`, `totmcst`, `urine` oraz `wblc`,
 
--   prawostronna asymetria zmiennych związanych z kosztami (`charges`, `totcst`, `totmcst`), co sugeruje, że większość pacjentów ponosi niskie koszty leczenia lub ma mniej poważne/zaawansowane wyniki kliniczne. Może to odzwierciedlać intensywne wykorzystanie zasobów w bardziej krytycznych przypadkach.
+-   prawostronna asymetria występuje dla zmiennych związanych z kosztami (`charges`, `totcst`, `totmcst`), co sugeruje, że większość pacjentów ponosi niskie koszty leczenia lub ma mniej poważne wyniki kliniczne. Może to odzwierciedlać intensywne wykorzystanie zasobów szpitalnych w bardziej krytycznych przypadkach.
 
 -   Są zmienne takie jak `bili`, `charges`, `scoma`, `slos`, czy `hday`, które charakteryzują się długimi ogonami na wykresach, co sugeruje obecność wartości odstających.
 
 -   Rozkłady parametrów fizjologicznych (`meanbp`, `hrt`, `resp`, `temp`) mają tendencję do bycia bardziej scentralizowanymi, wskazując na pewien stopień jednorodności tych pomiarów w całej populacji pacjentów, z pewnymi znaczącymi odchyleniami od wartości centralnych.
 
--   Podobnie jak w przypadku parametrów fizjologicznych, pomiary laboratoryjne (`pafi`, `alb`, `bili`, `crea`, `sod`, `ph`, `glucose`, `bun`, `urine`) wykazują tendencje centralne o różnym stopniu skośności, co sugeruje zakres wartości zgodny z populacją pacjentów szpitalnych.
+-   Podobnie, jak w przypadku parametrów fizjologicznych, pomiary laboratoryjne (`pafi`, `alb`, `bili`, `crea`, `sod`, `ph`, `glucose`, `bun`, `urine`) wykazują tendencje centralne o różnym stopniu skośności, co sugeruje zakres wartości zgodny z populacją pacjentów szpitalnych.
 
 ```{r}
-dane |> select(-c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
+dane |> select(-c("age", "slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
   pivot_longer(cols = everything()) |> 
   ggplot(aes(value, fill = name)) +
   geom_bar()+
   facet_wrap(~name, scales = "free")+
-  labs(fill = "zmienne kategoryczne")+
   theme(legend.position = "none")
 ```
 
@@ -461,11 +445,24 @@ Na podstawie powyższych rozkładów zmiennych kategorycznych, widzimy, że każ
 
 ##### Imputacja braków danych
 
-Zgodnie z zaleceniami na stronie, najrozsądniejszym sposobem radzenia sobie z brakującymi wartościami w kolumnach \`alb\`, \`pafi\`, \`bili\`, \`crea\`, \`bun\`, \`wblc\` i \`urine\` jest wypełnienie brakujących wartości zalecanymi tam wartościami. Patrząc jednak na rozkłady tych zmiennych przedstawione wyżej oraz na liczebność braków danych dla tych zmiennych, a także ze względu na asymetrię rozkładówtych zmiennych oraz niezbalansowanie zmiennych jakościowych w tym zbiorze, zastosowana zostanie metoda imputacji $k$-najbliższych sąsiadów (tu 5).
+Zgodnie z zaleceniami na stronie, najrozsądniejszym sposobem radzenia sobie z brakującymi wartościami w kolumnach `alb`, `pafi`, `bili`, `crea`, `bun`, `wblc` i `urine` jest wypełnienie brakujących wartości zalecanymi tam wartościami. Patrząc jednak na rozkłady tych zmiennych przedstawione wyżej oraz na liczebność braków danych dla tych zmiennych, a także ze względu na asymetrię rozkładówtych zmiennych oraz niezbalansowanie zmiennych jakościowych w tym zbiorze, zastosowana zostanie metoda imputacji $k$-najbliższych sąsiadów (tu 5). Zmienna `income`, ze względu na to, że liczba braków danych dla niej stanowi niemal 50%, zostanie usunięta ze zbioru danych.
 
 ```{r}
-dane2 <- DMwR2::knnImputation(dane[,c("scoma", "meanbp", "hrt", "resp", "temp", "sod", "avtisst", "race", "crea", "charges", "totcst", "wblc", "edu", "income", "totmcst", "pafi", "alb", "bili", "ph", "glucose", "bun", "urine", "adlp", "adls", "sfdm2")], k=5, meth='pmm')
+dane2 <- DMwR2::knnImputation(dane[,c("scoma", "meanbp", "hrt", "resp", "temp", "sod", "avtisst", "race", "crea", "charges", "totcst", "wblc", "edu", "totmcst", "pafi", "alb", "bili", "ph", "glucose", "bun", "urine", "adlp", "adls", "sfdm2")], k=5, meth='pmm')
 dane3 <- bind_cols(dane[,c(1:7,16:19,36:38)], dane2)
+
+#odpowiednia kolejnosc kolumn
+dane3 <- dane3[,c(1:12,15:37,13,14,38)]
+```
+
+```{r}
+dane3 |> select(-c("age", "slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")) |> 
+  pivot_longer(cols = everything()) |> 
+  ggplot(aes(value, fill = name)) +
+  geom_bar()+
+  facet_wrap(~name, scales = "free")+
+  theme(legend.position = "none")+
+  ggtitle("Rozkłady zmiennych kategorycznych po imputacji braków danych")
 ```
 
 #### Macierz korelacji
@@ -477,40 +474,28 @@ corrplot(mydata.cor, tl.cex = 0.6)
 
 Z macierzy korelacji dla zmiennych numerycznych, wyczytać możemy, że istnieją silne korelacje pomiędzy zmiennymi: `charges` i `totcst` (0,80) oraz `adlsc` i `adls` (0,89), a także umiarkowane korelacje pomiędzy zmiennymi `slos` i `charges` (0,63), `slos` i `totcst` (0,72), `slos` i `totmcst` (0,65), `charges` i `totmcst` (0,74), `bun` i `crea` (0,69), `adls` i `adlp` (0,64) oraz `adlsc` i `adlp` (0,59).
 
-```{r}
-cor(dane3$slos, dane3$charges) #0.63
-cor(dane3$slos, dane3$totcst) #0.72
-cor(dane3$slos, dane3$totmcst) #0.65
-cor(dane3$charges, dane3$totcst) #0.80 - silna
-cor(dane3$charges, dane3$totmcst) #0.74
-cor(dane3$bun, dane3$crea) #0.69
-cor(dane3$adlsc, dane3$adls) #0.89 - silna
-cor(dane3$adls, dane3$adlp) #0.64
-cor(dane3$adlsc, dane3$adlp) #0.59
-```
-
 Związane są ze sobą zatem zmienne:
 
 -   liczba dni pobytu w szpitalu i kosztów z nimi związanych,
 
--   opłaty szpitalne oraz koszty i mikrokoszty pobytu w szpitalu,
+-   opłaty szpitalne oraz koszty i mikrokoszty pobytu w szpitalu - w tym przypadku ze wbioru zostaną usunięte kolumny `totcst` oraz `totmcst`.
 
--   poziom azotu mocznikowego we krwi oraz poziom kreatyniny w surowicy,
+-   Poziom azotu mocznikowego we krwi oraz poziom kreatyniny w surowicy,
 
 -   indeksy czynności życia codziennego pacjenta wypełniane przez niego, osobę zastępczą oraz skalibrowane do surogatu - tutaj ze względu na bardzo silną korelację, jedna z kolumn `adls` oraz `adlsc` zostanie usunięta ze zbioru.
 
 ```{r}
-dane3 <- dane3[,-38] #usunięcie kolumny adls
-dane3 <- dane3[,-c(25,29)] #usunięcie kolumny totcst i totmcst
+dane3 <- dane3[,-35] #adls
+dane3 <- dane3[,-c(23,26)] #totcst i totmcst
 ```
 
 #### Wartości odstające
 
 ```{r}
-nearZeroVar(dane3) #dementia
+nearZeroVar(dane3)
 ```
 
-Dla zmiennej `dementia` stosunek częstotliwości najczęściej występującej wartości (0) do częstotliwości drugiej najczęściej występującej wartości (1) jest duży.
+Dla zmiennej `dementia` stosunek częstotliwości najczęściej występującej wartości (0) do częstotliwości drugiej najczęściej występującej wartości (1) jest duży, co potwierdzają także wcześniejsze obserwacje na wykresie z rozkładem tej zmiennej.
 
 ```{r}
 dane3 |> 
@@ -518,11 +503,11 @@ dane3 |>
   findLinearCombos()
 ```
 
-Brak jest również w tym zbiorze danych kombinacji liniowych pomiędzy predyktorami.
+Brak jest w tym zbiorze danych kombinacji liniowych pomiędzy predyktorami.
 
 ```{r}
 dane3 |> 
-  select(-c("death", "sex", "hospdead", "dzgroup", "dzclass", "diabetes", "dementia", "ca", "income", "race", "sfdm2")) |> 
+  select(-c("death", "sex", "hospdead", "dzgroup", "dzclass", "diabetes", "dementia", "ca", "race", "sfdm2")) |>
   pivot_longer(cols = everything()) |> 
   ggplot(aes(value, fill = name)) +
   geom_boxplot()+
@@ -532,7 +517,9 @@ dane3 |>
 
 Powyższe wykresy ramka-wąsy wskazują, że niemal dla każdej zmiennej numerycznej istnieją wartości odstające.
 
-```{r}
+Za pomocą funkcji `rstatix::identify_outliers()`, zbadano liczbę wartości odstających oraz ekstremalnych w tym zbiorze.
+
+```{r echo=FALSE}
 identify_outliers(dane3, colnames(dane3)[1])[identify_outliers(dane3, colnames(dane3)[1])$is.outlier==T,] |> nrow() #age - 56, brak extreme
 
 identify_outliers(dane3, colnames(dane3)[3])[identify_outliers(dane3, colnames(dane3)[3])$is.outlier==T,] |> nrow() #slos - 768, 347 extreme
@@ -545,465 +532,307 @@ identify_outliers(dane3, colnames(dane3)[8])[identify_outliers(dane3, colnames(d
 
 identify_outliers(dane3, colnames(dane3)[12]) |> nrow() #adlsc - brak
 
-identify_outliers(dane3, colnames(dane3)[26])[identify_outliers(dane3, colnames(dane3)[26])$is.outlier==T,] |> nrow() #edu - 654, 68 extreme
+identify_outliers(dane3, colnames(dane3)[24])[identify_outliers(dane3, colnames(dane3)[24])$is.outlier==T,] |> nrow() #edu - 654, 68 extreme
 
-identify_outliers(dane3, colnames(dane3)[15])[identify_outliers(dane3, colnames(dane3)[15])$is.outlier==T,] |> nrow() #scoma - 1955, 1516 extreme
+identify_outliers(dane3, colnames(dane3)[13])[identify_outliers(dane3, colnames(dane3)[13])$is.outlier==T,] |> nrow() #scoma - 1955, 1516 extreme
 
-identify_outliers(dane3, colnames(dane3)[24])[identify_outliers(dane3, colnames(dane3)[24])$is.outlier==T,] |> nrow() #charges - 931, 458 extreme
+identify_outliers(dane3, colnames(dane3)[22])[identify_outliers(dane3, colnames(dane3)[22])$is.outlier==T,] |> nrow() #charges - 928, 458 extreme
 
-identify_outliers(dane3, colnames(dane3)[21])[identify_outliers(dane3, colnames(dane3)[21])$is.outlier==T,] |> nrow() #avtisst - 48, brak extreme
+identify_outliers(dane3, colnames(dane3)[19])[identify_outliers(dane3, colnames(dane3)[19])$is.outlier==T,] |> nrow() #avtisst - 48, brak extreme
 
-identify_outliers(dane3, colnames(dane3)[16])[identify_outliers(dane3, colnames(dane3)[16])$is.outlier==T,] |> nrow() #meanbp - 6, brak extreme
+identify_outliers(dane3, colnames(dane3)[14])[identify_outliers(dane3, colnames(dane3)[14])$is.outlier==T,] |> nrow() #meanbp - 6, brak extreme
 
-identify_outliers(dane3, colnames(dane3)[25])[identify_outliers(dane3, colnames(dane3)[25])$is.outlier==T,] |> nrow() #wblc - 400, 123 extreme
+identify_outliers(dane3, colnames(dane3)[23])[identify_outliers(dane3, colnames(dane3)[23])$is.outlier==T,] |> nrow() #wblc - 419, 123 extreme
 
-identify_outliers(dane3, colnames(dane3)[17])[identify_outliers(dane3, colnames(dane3)[17])$is.outlier==T,] |> nrow() #hrt - 40, 1 extreme
+identify_outliers(dane3, colnames(dane3)[15])[identify_outliers(dane3, colnames(dane3)[15])$is.outlier==T,] |> nrow() #hrt - 419, 1 extreme
 
-identify_outliers(dane3, colnames(dane3)[18])[identify_outliers(dane3, colnames(dane3)[18])$is.outlier==T,] |> nrow() #resp - 313, 23 extreme
+identify_outliers(dane3, colnames(dane3)[16])[identify_outliers(dane3, colnames(dane3)[16])$is.outlier==T,] |> nrow() #resp - 313, 23 extreme
 
-identify_outliers(dane3, colnames(dane3)[19])[identify_outliers(dane3, colnames(dane3)[19])$is.outlier==T,] |> nrow() #temp - 14, brak extreme
+identify_outliers(dane3, colnames(dane3)[17])[identify_outliers(dane3, colnames(dane3)[17])$is.outlier==T,] |> nrow() #temp - 14, brak extreme
 
-identify_outliers(dane3, colnames(dane3)[28])[identify_outliers(dane3, colnames(dane3)[28])$is.outlier==T,] |> nrow() #pafi - 144, 10 extreme
+identify_outliers(dane3, colnames(dane3)[25])[identify_outliers(dane3, colnames(dane3)[25])$is.outlier==T,] |> nrow() #pafi - 154, 10 extreme
 
-identify_outliers(dane3, colnames(dane3)[29])[identify_outliers(dane3, colnames(dane3)[29])$is.outlier==T,] |> nrow() #alb - 67, 4 extreme
+identify_outliers(dane3, colnames(dane3)[26])[identify_outliers(dane3, colnames(dane3)[26])$is.outlier==T,] |> nrow() #alb - 67, 4 extreme
 
-identify_outliers(dane3, colnames(dane3)[30])[identify_outliers(dane3, colnames(dane3)[30])$is.outlier==T,] |> nrow() #bili - 1202, 717 extreme
+identify_outliers(dane3, colnames(dane3)[27])[identify_outliers(dane3, colnames(dane3)[27])$is.outlier==T,] |> nrow() #bili - 1076, 717 extreme
 
-identify_outliers(dane3, colnames(dane3)[23])[identify_outliers(dane3, colnames(dane3)[23])$is.outlier==T,] |> nrow() #crea - 989, 539 extreme
+identify_outliers(dane3, colnames(dane3)[21])[identify_outliers(dane3, colnames(dane3)[21])$is.outlier==T,] |> nrow() #crea - 989, 539 extreme
 
-identify_outliers(dane3, colnames(dane3)[20])[identify_outliers(dane3, colnames(dane3)[20])$is.outlier==T,] |> nrow() #sod - 256, 16 extreme
+identify_outliers(dane3, colnames(dane3)[28])[identify_outliers(dane3, colnames(dane3)[28])$is.outlier==T,] |> nrow() #ph - 239, 32 extreme
 
-identify_outliers(dane3, colnames(dane3)[31])[identify_outliers(dane3, colnames(dane3)[31])$is.outlier==T,] |> nrow() #ph - 240, 32 extreme
+identify_outliers(dane3, colnames(dane3)[29])[identify_outliers(dane3, colnames(dane3)[29])$is.outlier==T,] |> nrow() #glucose - 481, 130 extreme
 
-identify_outliers(dane3, colnames(dane3)[32])[identify_outliers(dane3, colnames(dane3)[32])$is.outlier==T,] |> nrow() #glucose - 452, 130 extreme
-
-identify_outliers(dane3, colnames(dane3)[33])[identify_outliers(dane3, colnames(dane3)[33])$is.outlier==T,] |> nrow() #bun - 691, 191 extreme
-
-identify_outliers(dane3, colnames(dane3)[34])[identify_outliers(dane3, colnames(dane3)[34])$is.outlier==T,] |> nrow() #urine - 334, 62 extreme
-
-identify_outliers(dane3, colnames(dane3)[35])[identify_outliers(dane3, colnames(dane3)[35])$is.outlier==T,] |> nrow() #adlp - 637, 160 extreme
+identify_outliers(dane3, colnames(dane3)[30])[identify_outliers(dane3, colnames(dane3)[30])$is.outlier==T,] |> nrow() #bun - 726, 191 extreme
 ```
 
-Obserwacje zidentyfikowane jako odstające nie zidentyfikowano tylko dla zmiennej `adlsc`. Najliczniej występują one dla zmiennej `scoma` i ich liczba wynosi niemal dwa tysiące. Samych wartości ekstremalnych dla tej zminnej jest nieco ponad 1,5 tysiąca. Usunięcie tych obserwacji to pozbycie się prawie 20% zbioru, co byłoby niepoprawnym działaniem. Biorąc także pod uwagę, że dane dotyczą najbardziej chorych pacjentów, wartości odstające jeśli chodzi o dane medyczne są wręcz naturalne i niosą ze sobą cenne informacje. Na ten moment zidentyfikowane wartości odstające pozstaną niezmienne(?).
+Obserwacje zidentyfikowane jako odstające nie zidentyfikowano tylko dla zmiennej `adlsc`. Najliczniej występują one dla zmiennej `scoma` i ich liczba wynosi niemal dwa tysiące. Samych wartości ekstremalnych dla tej zmiennej jest nieco ponad 1,5 tysiąca. Usunięcie tych obserwacji to pozbycie się prawie 20% zbioru, co byłoby niepoprawnym działaniem. Biorąc także pod uwagę, że dane dotyczą najbardziej chorych pacjentów, wartości odstające jeśli chodzi o dane medyczne są wręcz naturalne i niosą ze sobą cenne informacje. Na ten moment zidentyfikowane wartości pozostaną w zbiorze danych.
 
 ## Wizualizacje zbioru
 
--   rozkłady wieku pacjentów w podziale na różne diagnozy
+#### Rozkłady wieku pacjentów w podziale na różne diagnozy
 
-    <div>
-
-    -   dzclass
+-   `dzclass` - kategoria choroby pacjenta
 
     ```{r}
+    my_title <- expression(paste("Rozkład wieku w podziale na ", italic("dzclass")))
         dane3 %>% 
           ggplot(aes(x=age, fill=dzclass))+
-          geom_histogram()
-
-        dane3 %>% 
-          ggplot(aes(x=age, fill=dzclass))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach dzclass")
+          geom_density(alpha=0.6)+
+          labs(title = my_title)+
+          scale_fill_brewer(palette="Set1")
     ```
 
-    -   dzgroup
+**Wnioski**
 
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=age, fill=dzgroup))+
-          geom_histogram()
+1.  Ostra niewydolność nerek/Niewydolność wielonarządowa (*ARF/MOSF*) (1) koncentruje się wokół 70 lat i tam osiąga swój szczyt.
+2.  Przewlekła obturacyjna choroba płuc/Zastoinowa niewydolność serca/Marskość wątroby (*COPD/CHF/Cirrhosis*) (2) również ma szeroki rozkład wiekowy, ze szczytem około 70-75 lat, co sugeruje, że choroby te są bardziej powszechne u starszych osób dorosłych. Ale za to, to rozkład tej choroby obejmuje najwięcej ludzi modych (20-35 lat) spośród wszystkich czterech kategorii.
+3.  Rak (*Cancer*) (3) ma najszerszy rozkład spośród badanych grup - dotyczy szerokiego przedziału wiekowego, także w większej liczbie dotyka osób młodych, ale osiąga szczyt dla pacjentów w wieku około 60-70 lat.
+4.  Rozkład dla śpiączki (*Coma*) (4) ma tendencję do pochylania się w kierunku młodszego wieku, ze szczytem około 20-30 lat i długim ogonem rozciągającym się na starsze grupy wiekowe.
 
-        dane3 %>% 
-          ggplot(aes(x=age, fill=dzgroup))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach dzgroup")
-    ```
-
-    -   ca
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=age, fill=dzclass))+
-          geom_histogram()
-
-        dane3 %>% 
-          ggplot(aes(x=age, fill=ca))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach cancer")
-    ```
-
-    -   sfdm2
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=age, fill=sfdm2))+
-          geom_histogram()
-
-        dane3 %>% 
-          ggplot(aes(x=age, fill=sfdm2))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach sfdm2")
-    ```
-
-    </div>
-
-##### Wnioski
-
-1\. \*\*Rozkład wieku według klasy choroby (\`dzclass\`):\*\*
-
-\* Rozkład dla \*"śpiączki"\* ma tendencję do pochylania się w kierunku młodszego wieku, ze szczytem około 20-30 lat i długim ogonem rozciągającym się na starsze grupy wiekowe.
-
-\* "Rak" ma szerszy rozkład, co wskazuje, że dotyczy szerokiego przedziału wiekowego, ale najczęściej osiąga szczyt w wieku około 60-70 lat.
-
-\* \*"POChP/CHF/marskość wątroby"\* również ma szeroki rozkład wiekowy, ze szczytem około 70-80 lat, co sugeruje, że choroby te są bardziej powszechne u starszych osób dorosłych.
-
-\* \*"ARF/MOSF"\* ma szczyt około 70 lat, podobnie jak \*"POChP/CHF/marskość wątroby"\*, co wskazuje, że ostra niewydolność nerek/niewydolność wielonarządowa również dotyka głównie osoby starsze.
-
-2\. \*\*Rozkład wieku według grup chorób (\`dzgroup\`):\*\*
-
-\* Choroby takie jak \*"marskość wątroby"\* i \*"śpiączka"\* wykazują szczyt zachorowań u młodszych osób dorosłych (około 40-50 lat w przypadku \*"marskości wątroby"\* i 20-30 lat w przypadku \*"śpiączki"\*).
-
-\* MOSF w/Malig (niewydolność wielonarządowa z nowotworem złośliwym) i rak okrężnicy mają tendencję do występowania u osób dorosłych w średnim i starszym wieku, osiągając szczyt w wieku około 60-70 lat.
-
-\* Rak płuc i przewlekła obturacyjna choroba płuc wykazują znaczną częstość występowania u osób starszych, szczególnie w wieku 70-80 lat.
-
-\* "CHF" (Congestive Heart Failure) i \* "ARF/MOSF w/Sepsis" mają najwyższą gęstość w starszych grupach wiekowych, około 70-80 lat, co ponownie wskazuje, że są to schorzenia powszechnie związane z zaawansowanym wiekiem.
-
-3\. \*\*Rozkład wieku według statusu raka (\`ca\`):\*\* \* Osoby z rakiem (\*"ca yes"\*) mają rozkład wieku, który osiąga szczyt około 60-70 lat; \* Osoby z rakiem z przerzutami (\*"ca metastatic"\*) wykazują szczyt w rozkładzie w tym samym przedziale wiekowym, co sugeruje, że przerzuty są również najczęściej diagnozowane u osób starszych; \* Rozkład wieku dla osób bez raka (\*"ca no"\*) jest zupełnie inny, ze szczytem około 60 lat i niższą ogólną gęstością w grupach wiekowych w porównaniu do osób z rakiem.
-
--   rozkład wieku w podziale na diabetes i dementia
-
-    <div>
-
-    -   diabetes
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=age, fill=diabetes))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach diabetes")
-    ```
-
-    -   dementia
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=age, fill=dementia))+
-          geom_density(alpha=0.4)+
-          ggtitle("Rozkład wieku w podziale na pacjentów w grupach dementia")
-    ```
-
-    </div>
-
-##### Wnioski
-
-1\. \*\*Rozkład wieku według cukrzycy (\`cukrzyca\`):\*\* \* Większość pacjentów bez cukrzycy (oznaczonych jako \*"cukrzyca 0"\*) jest rozłożona w szerokim przedziale wiekowym, z największą liczbą w grupie w średnim wieku, osiągając szczyt około 60 lat. \* Pacjenci z cukrzycą (oznaczeni jako \*"cukrzyca 1"\*) są mniej liczni w porównaniu z osobami bez cukrzycy. Rozkład wieku pacjentów z cukrzycą ma bardziej skoncentrowany szczyt w wieku około 60 lat, co sugeruje, że cukrzyca jest bardziej rozpowszechniona w tej grupie wiekowej. \* Nakładanie się dwóch grup sugeruje, że chociaż cukrzyca występuje częściej w starszej populacji, nie jest ona wyłączna dla nich; młodsze grupy wiekowe również mają znaczną liczbę pacjentów z cukrzycą.
-
-2\. \*\*Rozkład wieku według demencji (\`demencja\`):\*\* \* Demencja jest w dużej mierze stanem starszego wieku, na co wskazuje szczyt i koncentracja \*'demencji 1'\* w wyższym przedziale wiekowym, szczególnie po 70 roku życia.
-
-\* Jest bardzo niewielu młodszych pacjentów z demencją; rozkład pacjentów z demencją (oznaczonych jako \*"demencja 1"\*) wykazuje gwałtowny wzrost od około 60 roku życia i osiąga szczyt w wieku około 80 lat. \* Liczba pacjentów bez demencji (oznaczonych jako \*"demencja 0"\*) jest wysoka we wszystkich grupach wiekowych, ale wykazuje spadek wraz ze wzrostem wieku, co jest oczekiwane, ponieważ liczba osób starszych naturalnie maleje.
-
--   boxploty w grupach
-
-    <div>
-
-    -   sex vs slos
-
-    ```{r}
-        ggplot(dane3, aes(x=sex, y=slos, fill=sex)) + 
-            geom_boxplot()
-    ```
-
-    -   sex vs dtime
-
-    ```{r}
-        ggplot(dane3, aes(x=sex, y=d.time, fill=sex)) + 
-            geom_boxplot()
-    ```
-
-    -   dzgroup vs slos
-
-    ```{r}
-        ggplot(dane3, aes(x=dzgroup, y=slos, fill=dzgroup)) + 
-            geom_boxplot()
-    ```
-
-    -   dzgroup vs dtime
-
-    ```{r}
-        ggplot(dane3, aes(x=dzgroup, y=d.time, fill=dzgroup)) + 
-            geom_boxplot()
-    ```
-
-    -   dzclass vs slos
-
-    ```{r}
-        ggplot(dane3, aes(x=dzclass, y=slos, fill=dzclass)) + 
-            geom_boxplot()
-    ```
-
-    -   dzclass vs dtime
-
-    ```{r}
-        ggplot(dane3, aes(x=dzclass, y=d.time, fill=dzclass)) + 
-            geom_boxplot()
-    ```
-
-    </div>
-
-##### Wnioski
-
-2\. \*\*Płeć (\`sex\`) a długość pobytu (\`slos\`):\*\* \* Wykres pudełkowy pokazuje, że mediana długości pobytu w szpitalu jest nieco wyższa w przypadku kobiet w porównaniu z mężczyznami. Zakres międzykwartylowy (IQR) jest również szerszy dla kobiet, co sugeruje większą zmienność długości pobytu w szpitalu wśród pacjentek. Jednak obecność wartości odstających, jak wskazują wiskery, jest znaczna w obu grupach.\
-3. \*\*Płeć (\`sex\`) a czas do zgonu (\`d.time\`):\*\* \* Wykres pudełkowy wskazuje, że mediana czasu do zgonu jest podobna zarówno dla mężczyzn, jak i kobiet, z szerokim zakresem wartości, jak pokazują rozszerzone wiskery. Podobieństwo median sugeruje brak znaczącej różnicy w czasie przeżycia po hospitalizacji między płciami.
-
-5\. \*\*Grupa chorób (\`dzgroup\`) a długość pobytu (\`slos\`):\*\* \* Wykres pudełkowy pokazuje, że pacjenci z "ARF/MOSF z Sepsą" mają zwykle dłuższą medianę długości pobytu w szpitalu, a pacjenci ze "śpiączką" również wykazują szeroki IQR, co wskazuje na zmienność. Inne grupy, takie jak "rak płuc", mają krótszą medianę pobytu i mniejszą zmienność.\
-6. \*\*Grupa chorób (\`dzgroup\`) a czas do zgonu (\`d.time\`):\*\* \* Ten wykres pudełkowy wskazuje, że czas przeżycia po ocenie różni się w zależności od grupy chorób. Pacjenci z "rakiem okrężnicy" mają najdłuższą medianę czasu do śmierci, podczas gdy pacjenci ze "śpiączką" mają najkrótszy czas. Warto zauważyć, że grupa "ARF/MOSF w/Sepsis" wykazuje duży IQR, co sugeruje dużą zmienność wyników pacjentów.
-
-8\. \*\*Klasa choroby (\`dzclass\`) a długość pobytu (\`slos\`):\*\* \* Wykres pudełkowy dla klas chorób pokazuje, że pacjenci w śpiączce mają szeroki zakres długości pobytu w szpitalu, na co wskazują długie wąsy i szeroki IQR. "ARF/MOSF" ma najwyższą medianę długości pobytu wśród grup.\
-9. \*\*Klasa choroby (\`dzclass\`) a czas do zgonu (\`d.time\`):\*\* \* Porównując klasy chorób, pacjenci z "rakiem" mają znacznie dłuższą medianę czasu do zgonu, co sugeruje lepsze rokowanie po ocenie. Natomiast pacjenci w śpiączce wykazują znacznie niższą medianę czasu do zgonu, z mniejszą zmiennością.
-
--   histogramy by disease group
-
-    <div>
-
-    -   hospdead by disease group
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=dzgroup, y=hospdead, fill=dzgroup))+
-          geom_histogram()
-    ```
-
-    -   aps by disease group
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=dzgroup, y=aps, fill=dzgroup))+
-          geom_histogram()
-    ```
-
-    -   slos by disease group
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=dzgroup, y=slos, fill=dzgroup))+
-          geom_histogram()
-    ```
-
-    -   d.time by disease group
-
-    ```{r}
-        dane3 %>% 
-          ggplot(aes(x=dzgroup, y=d.time, fill=dzgroup))+
-          geom_histogram()
-    ```
-
-    </div>
-
-##### Wnioski
-
-1\. Śmiertelność szpitalna (\`hospdead\`) według grup chorób:
-
-\* Wykres słupkowy pokazuje znaczne zróżnicowanie wskaźników śmiertelności szpitalnej w poszczególnych grupach chorób. Grupa \*"Śpiączka"\* wykazuje najwyższy wskaźnik śmiertelności, co może odzwierciedlać ciężkość i złe rokowania związane ze śpiączką w warunkach szpitalnych. I odwrotnie, grupa "Rak płuc" wykazuje najniższy wskaźnik śmiertelności wśród przedstawionych grup, co sugeruje względną różnicę w ostrej śmiertelności lub skuteczności interwencji.
-
-2\. Acute Physiology Score (\`aps\`) według grupy chorób:
-
-\* Grupa "MOSF z nowotworem złośliwym" ma najwyższy średni wynik fizjologii ostrej, co wskazuje na poważne zaburzenia fizjologiczne, które mogą odpowiadać wyższym potrzebom opieki krytycznej. Z kolei grupa "Rak płuc" ma najniższy średni wynik, co może sugerować niższy poziom niestabilności fizjologicznej w tej grupie.
-
-3\. Długość pobytu (\`slos\`) według grupy chorób:
-
-\* Pacjenci z \*'ARF/MOSF w/Sepsis'\* mają najdłuższą średnią długość pobytu, co może wskazywać na złożony proces leczenia i rekonwalescencji. Pacjenci \*"Coma"\* mają również wysoką średnią długość pobytu, co może być związane z potrzebą przedłużonej intensywnej terapii.
-
-4\. Czas do śmierci (\`d.time\`) według grupy chorób:
-
-\* Grupy "Marskość wątroby" i \*"ARF/MOSF w/Sepsis"\* mają dłuższy średni czas do zgonu, co może odzwierciedlać dłuższą trajektorię choroby lub dłuższy okres interwencji medycznej przed śmiercią. Grupa \*"Coma"\* wykazuje znacznie krótszy średni czas do zgonu, co jest zgodne z wyższym wskaźnikiem śmiertelności i może sugerować szybką dekompensację lub zagrażające życiu warunki, które prowadzą do śmierci.
-
--   
+-   `dzgroup` - podkategorie choroby pacjenta
 
 ```{r}
-ggplot(data = dane3 |> group_by(sex), aes(x = sex, fill = dzgroup))+
-  geom_histogram(stat = "count") #do poprawienia
+my_title <- expression(paste("Rozkład wieku w podziale na ", italic("dzgroup")))
+    dane3 %>% 
+      ggplot(aes(x=age, fill=dzgroup))+
+      geom_density(alpha=0.6)+
+      labs(title = my_title)+
+      scale_fill_brewer(palette="Set1")
 ```
 
-## Przygotowanie danych do budowy modelu
+**Wnioski**
 
-Chcąc rozwiązać zadanie klasyfikacyjne z wieloma wyjściami postanowiłem przygotować dwa zestawy danych uczących. Jeden by nie stosował metod *upsamplingu,* natomiast do drugiego zastosowałbym metodę MLSMOTE (ang. *Synthetic oversampling of multilabel instances*). W ramach preprocesingu ograniczę się do standaryzacji zmiennych (również na potrzeby stosowania MLSMOTE, ponieważ jest ona oparta o odległości pomiędzy obiektami - kNN), zamiany zmiennej jakościowej na *dummy variable*. Do oceny dopasowania modeli zastosuję miary zarówno na poziomie pojedynczych etykiet, jaki i zestawów etykiet. Jako model, którego użyję do porównań posłuży mi SVM w różnych wariantach:
+1.  Choroby takie jak rak płuc (*Lung Cancer*) (1), ostra niewydolność nerek/niewydolność wielonarządowa z sepsą (*ARF/MOSF w/Sepsis*) (3), śpiączka (*Coma*) (4), zastoinowa niewydolność serca (*CHF*) (5), rak okrężnicy (*Colon Cancer*) (6), przewlekła obturacyjna choroba płuc (*COPD*) (7), niewydolność wielonarządowa z nowotworem złośliwym (*MOSF w/Malig*) (8) koncentrują się wokół wieku 65-80 lat. Zatem są one bardziej powszechne wśród starszych pacjentów.
 
--   *binary revelance -* jest to adaptacja powszechnie znanego podejścia *one-vs-all*. Metoda ta przekształca oryginalny wieloetykietowy zbiór danych w kilka binarnych zbiorów danych, tyle ile jest różnych etykiet. W ten sposób można użyć dowolnego klasyfikatora binarnego, łącząc ich indywidualne przewidywania w celu wygenerowania ostatecznego wyniku.
+2.  Choroby: przewlekła obturacyjna choroba płuc (*COPD*) (7), niewydolność wielonarządowa z nowotworem złośliwym (*MOSF w/Malig*) (8) znacznie się wyróżniają na tle pozostałych pod względem znacznego obejmowania także młodszych pacjentów (18-30 lat).
 
--   *label powerset* - metoda ta przekształca zbiór danych wieloetykietowych w zbiór danych wieloklasowych, wykorzystując zestaw etykiet każdej instancji jako identyfikator klasy. Można użyć dowolnego klasyfikatora wieloklasowego, przekształcając przewidywaną klasę z powrotem w zestaw etykiet.
+3.  Marskość wątroby (*Cirrhosis*) (2) koncentruje się wokół wieku około 40 lat, ale obejmuje także starszych pacjentów.
 
--   *classifier chains -* poznany na wykładzie.
+4.  Największą gęstość mają grupy chorób: rak płuc (*Lung Cancer*) (1), zastoinowa niewydolność serca (*CHF*) (5) oraz przewlekła obturacyjna choroba płuc (*COPD*) (6).
 
-++ sieci neuronowe
-
-!!!!
-
-jestem za przewidywaniem d.time - liczba dni do śmierci (regression), sfdm2 (classification 1/2/3/4/5) oraz death (classification 0/1) /// ewentualnie tylko sfdm2 oraz death
-
-!!!!
-
-### Model bez upsamplingu
+-   `ca` - definiuje, czy pacjent ma raka
 
 ```{r}
-library(tidymodels)
-library(mldr)
-library(mldr.resampling)
-library(utiml)
-#setParallel(FALSE)
-#setNumCores(4)
+    my_title <- expression(paste("Rozkład wieku w podziale na ", italic("ca")))
+    dane3 %>% 
+      ggplot(aes(x=age, fill=ca))+
+      geom_density(alpha=0.6)+
+      labs(title = my_title)+
+      scale_fill_brewer(palette="Set1")
+```
 
-dane3$death <- as.numeric(as.character(dane3$death))
-dane3$hospdead <- as.numeric(as.character(dane3$hospdead))
-dane3$sfdm2 <- as.numeric(as.character(dane3$sfdm2))
+**Wnioski**
 
-#w <- c()
-#for(i in 1:nrow(dane3)){
-#  w[i] <- ifelse(dane3$death[i]==1, dane3$death[i] <- 0, dane3$death[i] <- 1)
-#}
-#dane3$death <- w
-#w2 <- c()
-#for(i in 1:nrow(dane3)){
-#  w2[i] <- ifelse(dane3$hospdead[i]==1, dane3$hospdead[i] <- 0, dane3$hospdead[i] <- 1)
-#}
-#dane3$hospdead <- w2
+1.  Pacjenci chorzy na raka (1) mają rozkład wieku koncentrujący się w wieku około 70-75 lat.
 
+2.  Pacjenci niechorujący na raka (0) charakteryzują się podobnym rozkładem do pacjentów chorych na tę chorobę (1). Obejmują jednak oni więcej osób w wieku średnim (40-50 lat).
+
+3.  Najwięcej osób chorujących na raka z przerzutami (2) jest w wieku 60-65 lat - koncentracja rozkładu gęstości ma tu swój szczyt.
+
+-   `sfdm2` - poziom niepełnosprawności funkcjonalnej pacjenta
+
+```{r}
+    my_title <- expression(paste("Rozkład wieku w podziale na ", italic("sfdm2")))
+    dane3 %>% 
+      ggplot(aes(x=age, fill=sfdm2))+
+      geom_density(alpha=0.5)+
+      labs(title = my_title)+
+      scale_fill_brewer(palette="Set1")
+```
+
+**Wnioski**
+
+1.  Tutaj rozkłady wieku pacjentów ze względu na ich poziom niepełności funkcjonalnej są bardzo podobne. Koncentrują się wokół wieku 60-80 lat i obejmują więcej osób w wieku średnim (45-55 lat) niż tych starszych (80 i więcej).
+
+2.  Wyróżnia się nieco bardziej rozkład dla niepełnosprawności na poziomie 4 (najwyższym) - obejmuje on znacznie więcej młodszych pacjentów (0-30 lat) w porównaniu z pozostałymi poziomami.
+
+#### Rozkłady wieku w podziale na pacjentów chorych na cukrzycę oraz demencję
+
+-   `diabetes` - cukrzyca
+
+```{r}
+    my_title <- expression(paste("Rozkład wieku w podziale na ", italic("diabetes")))
+    dane3 %>% 
+      ggplot(aes(x=age, fill=diabetes))+
+      geom_density(alpha=0.5)+
+      labs(title = my_title)+
+      scale_fill_brewer(palette="Set1")
+```
+
+**Wnioski**
+
+1.  Większość pacjentów bez cukrzycy (0) jest rozłożona w szerokim przedziale wiekowym, z największą liczbą w grupie 50-75 lat, osiągając szczyt około 70 lat.
+
+2.  Rozkład wieku pacjentów z cukrzycą (1) ma bardziej skoncentrowany szczyt w wieku około 70 lat, co sugeruje, że cukrzyca jest bardziej rozpowszechniona w tej grupie wiekowej. Nakładanie się dwóch grup sugeruje, że chociaż cukrzyca występuje częściej w starszej populacji, nie jest ona wyłączna dla nich; młodsze grupy wiekowe również mają znaczną liczbę pacjentów z cukrzycą.
+
+-   `dementia` - demencja
+
+```{r}
+    my_title <- expression(paste("Rozkład wieku w podziale na ", italic("dementia")))
+    dane3 %>% 
+      ggplot(aes(x=age, fill=dementia))+
+      geom_density(alpha=0.5)+
+      labs(title = my_title)+
+      scale_fill_brewer(palette="Set1")
+```
+
+**Wnioski**
+
+1.  Tutaj widoczne są znaczne różnice pomiędzy pacjentami zdrowymi pod względem demencji (0), a chprującymi na tę chorobę (1). Pacjenci chorzy na demencję są głównie starsi od niechorujących na nią - koncentrują się w okolicach 80-85. roku życia.
+
+2.  Jest bardzo niewielu młodszych pacjentów z demencją; rozkład pacjentów z demencją (1) wykazuje gwałtowny wzrost od około 60 roku życia i osiąga szczyt w wieku około 80 lat.
+
+3.  Liczba pacjentów bez demencji (0) dotyczy także młodszych pacjentów, jednak szczyt osiąga dla wieku 65-70 lat, a potem gwałtownie spada.
+
+#### Wykresy ramka-wąsy w wybranych grupach
+
+-   `dzgroup` vs `slos`
+
+```{r}
+    ggplot(dane3, aes(x=dzgroup, y=slos, fill=dzgroup)) + 
+        geom_boxplot()
+```
+
+Przedstawione powyżej wykresy ramka-wąsy wskazują, że pacjenci chorujący na ostrą niewydolność nerek/niewydolność wielonarządową z sepsą (3) oraz niewydolność wielonarządową z nowotworem złośliwym (8) mają wyższą medianę długości pobytu w szpitalu oraz większą zmienność tej cechy, a pacjenci chorujący na raka płuc (1) oraz zastoinową niewydolność serca mają najmniejszą medianę pobytu spośród wszystkich chorób i najmniejszą zmienność.
+
+-   `dzgroup` vs `d.time`
+
+    ```{r}
+    ggplot(dane3, aes(x=dzgroup, y=d.time, fill=dzgroup)) +          
+      geom_boxplot()
+    ```
+
+Te wykresy pudełkowy wskazują, że czas liczba dni obserwacji do momentu śmierci pacjenta różni się w zależności od grupy chorób. Pacjenci w śpiączce (4) oraz chorzy na raka okrężnicy mają największą medianę liczby dni do śmierci, podczas gdy pacjenci chorzy na ostrą niewydolność nerek/niewydolność wielonarządową z sepsą (3) oraz przewlekłą obturacyjna chorobę płuc (7) mają najkrótszy czas - zatem ci pacjenci mieli krótszy czas życia od pozostałych chorób. Zatem te dwie choroby wyróżniają się szybkim postępem rozwoju. Grupy chorób: marskość wątroby (2), śpiączka (4), rak okrężnicy (6) oraz niewydolność wielonarządowa z nowotworem złośliwym (8) charakteryzują się ponadto dużą zmiennością wyników. Widzimy także tutaj dużo obserwacji zakwalifikowanych jako odstające, ale rozważania o nich były przeprowadzone w sekcji **Wartości odstające**.
+
+-   `dzclass` vs `slos`
+
+```{r}
+ggplot(dane3, aes(x=dzclass, y=slos, fill=dzclass)) + 
+        geom_boxplot()
+```
+
+Wykres pudełkowy dla klas chorób pokazuje, że pacjenci chorzy na przewlekłą obturacyjną chorobę płuc/zastoinową niewydolność serca/marskość wątroby (2) mają szeroki zakres długości pobytu w szpitalu. Z kolei pacjenci chorzy na ostrą niewydolność nerek/niewydolność wielonarządową (1) mają najniższą medianę dni pobytu w szpitalu oraz najmniejszą zmienność spośród pozostałych klas chorób.
+
+-   `dzclass` vs `dtime`
+
+```{r}
+ggplot(dane3, aes(x=dzclass, y=d.time, fill=dzclass)) + 
+        geom_boxplot()
+```
+
+Porównując klasy chorób, pacjenci z rakiem (3) mają znacznie niższą medianę czasu do zgonu - zatem rak jest tutaj szybko postępującą chorobą przyczyniającego się do szybkiego zgonu pacjenta. Najwyższą medianą dni do momentu zgonu wyróżniają się pacjenci będący w śpiączce.
+
+# Budowa modeli
+
+W tej części pracy zostaną wdrożone modele SVM w trzech wariantach:
+
+-   *binary revelance*,
+
+-   *label powerset*,
+
+-   *classifier chains*.
+
+Następnie wdrożone zostaną modele sieci neurowej z różnymi hiperparametrami. W ostatniej części zostaną porównane oraz podsumowane wyniki dla obu z tych rodzajów modeli.
+
+## Modele SVM
+
+### Przygotowanie danych do budowy modeli
+
+*Preprocessing* danych do tych modeli będzie polegał na normalizacji wszystkich zmiennych numerycznych oraz zamianie wszystkich zmienncyh kategorycznych na typ *dummy*. Nie zostanie przeprowadzony upsampling.
+
+Przeprowadzony zostanie także podział zbioru na uczący oraz testowy w proporcji 7:3.
+
+```{r}
 split <- initial_split(dane3, prop = 0.7)
 df_train <- training(split)
 df_test <- testing(split)
 
 rec <- recipe(death+hospdead+sfdm2 ~ ., data = df_train) |> 
   step_normalize(all_numeric_predictors()) |> 
-  step_dummy(sex, dzgroup, dzclass, ca, income, race, diabetes, dementia)
+  step_dummy(all_factor_predictors())
 
 df_train_trans <- rec |> 
   prep() |> 
-  bake(new_data = NULL) |> 
-  select(everything())
+  bake(new_data = NULL)
 
 df_test_trans <- rec |> 
   prep() |> 
-  bake(new_data = df_test) |> 
-  select(everything())
+  bake(new_data = df_test)
 
-df_train_trans |> 
-  head()
-
-df_train_trans$dementia_X1 <- as.numeric(df_train_trans$dementia_X1)
-df_train_trans$diabetes_X1 <- as.numeric(df_train_trans$diabetes_X1)
-df_train_trans$race_X2 <- as.numeric(df_train_trans$race_X2)
-df_train_trans$race_X3 <- as.numeric(df_train_trans$race_X3)
-df_train_trans$race_X4 <- as.numeric(df_train_trans$race_X4)
-df_train_trans$race_X5 <- as.numeric(df_train_trans$race_X5)
-df_train_trans$income_X4 <- as.numeric(df_train_trans$income_X4)
-df_train_trans$income_X3 <- as.numeric(df_train_trans$income_X3)
-df_train_trans$income_X2 <- as.numeric(df_train_trans$income_X2)
-df_train_trans$ca_X2 <- as.numeric(df_train_trans$ca_X2)
-df_train_trans$ca_X1 <- as.numeric(df_train_trans$ca_X1)
-df_train_trans$dzclass_X2 <- as.numeric(df_train_trans$dzclass_X2)
-df_train_trans$dzclass_X3 <- as.numeric(df_train_trans$dzclass_X3)
-df_train_trans$dzclass_X4 <- as.numeric(df_train_trans$dzclass_X4)
-df_train_trans$dzgroup_X2 <- as.numeric(df_train_trans$dzgroup_X2)
-df_train_trans$dzgroup_X3 <- as.numeric(df_train_trans$dzgroup_X3)
-df_train_trans$dzgroup_X4 <- as.numeric(df_train_trans$dzgroup_X4)
-df_train_trans$dzgroup_X5 <- as.numeric(df_train_trans$dzgroup_X5)
-df_train_trans$dzgroup_X6 <- as.numeric(df_train_trans$dzgroup_X6)
-df_train_trans$dzgroup_X7 <- as.numeric(df_train_trans$dzgroup_X7)
-df_train_trans$dzgroup_X8 <- as.numeric(df_train_trans$dzgroup_X8)
-df_train_trans$sex_X1 <- as.numeric(df_train_trans$sex_X1)
+df_train_trans <- sapply(X = df_train_trans, FUN = as.numeric)
+df_test_trans <- sapply(df_test_trans, as.numeric)
 df_train_trans <- as.data.frame(df_train_trans)
-
-df_test_trans$dementia_X1 <- as.numeric(df_test_trans$dementia_X1)
-df_test_trans$diabetes_X1 <- as.numeric(df_test_trans$diabetes_X1)
-df_test_trans$race_X2 <- as.numeric(df_test_trans$race_X2)
-df_test_trans$race_X3 <- as.numeric(df_test_trans$race_X3)
-df_test_trans$race_X4 <- as.numeric(df_test_trans$race_X4)
-df_test_trans$race_X5 <- as.numeric(df_test_trans$race_X5)
-df_test_trans$income_X4 <- as.numeric(df_test_trans$income_X4)
-df_test_trans$income_X3 <- as.numeric(df_test_trans$income_X3)
-df_test_trans$income_X2 <- as.numeric(df_test_trans$income_X2)
-df_test_trans$ca_X2 <- as.numeric(df_test_trans$ca_X2)
-df_test_trans$ca_X1 <- as.numeric(df_test_trans$ca_X1)
-df_test_trans$dzclass_X2 <- as.numeric(df_test_trans$dzclass_X2)
-df_test_trans$dzclass_X3 <- as.numeric(df_test_trans$dzclass_X3)
-df_test_trans$dzclass_X4 <- as.numeric(df_test_trans$dzclass_X4)
-df_test_trans$dzgroup_X2 <- as.numeric(df_test_trans$dzgroup_X2)
-df_test_trans$dzgroup_X3 <- as.numeric(df_test_trans$dzgroup_X3)
-df_test_trans$dzgroup_X4 <- as.numeric(df_test_trans$dzgroup_X4)
-df_test_trans$dzgroup_X5 <- as.numeric(df_test_trans$dzgroup_X5)
-df_test_trans$dzgroup_X6 <- as.numeric(df_test_trans$dzgroup_X6)
-df_test_trans$dzgroup_X7 <- as.numeric(df_test_trans$dzgroup_X7)
-df_test_trans$dzgroup_X8 <- as.numeric(df_test_trans$dzgroup_X8)
-df_test_trans$sex_X1 <- as.numeric(df_test_trans$sex_X1)
 df_test_trans <- as.data.frame(df_test_trans)
 ```
-
-W ten sposób przygotowany został podstawowy *preprocessing* oraz podział na zbiór uczący i testowy, który zostanie wykorzystany w obu modelach, z tą różnicą, że w drugim modelu zostanie przeprowadzony MLSMOTE na zbiorze uczącym.
 
 ```{r}
 dt_train1 <- mldr_from_dataframe(df_train_trans, labelIndices = c(26:28)) 
 dt_test <- mldr_from_dataframe(df_test_trans, labelIndices = c(26:28)) 
-dt_train1$labelsets
-dt_test$labelsets
 ```
-
-Jak widać niektóre zestawy etykiet są bardzo rzadkie, szczególnie w zbiorze testowym.
 
 #### Binary relevance model
 
 ```{r}
-br_train1 <- br(dt_train1, "SVM", seed=123)
-pred_br_1 <- predict(br_train1, dt_test)
+#br_train1 <- br(dt_train1, "SVM")
 
-head(as.bipartition(pred_br_1))
-head(as.probability(pred_br_1))
-head(as.ranking(pred_br_1))
-multilabel_confusion_matrix(dt_test, pred_br_1)
-(eval_br_1 <- multilabel_evaluate(dt_test, pred_br_1, measures = c("example-based", "micro-based")))
+#saveRDS(br_train1, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\br_train.rds")
+br_train <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\br_train.rds")
+pred_br <- predict(br_train, dt_test)
+
+head(as.probability(pred_br))
+multilabel_confusion_matrix(dt_test, pred_br)
+(eval_br <- multilabel_evaluate(dt_test, pred_br, measures = c("example-based")))
 ```
 
-Accuracy na poziomie 96%.
+*Accuracy* na poziomie 100%, inne metryki na bardzo dobrym poziomie.
 
 #### Label powerset model
 
 ```{r}
-lp_train1 <- lp(dt_train1, "SVM", seed = 123)
-pred_lp_1 <- predict(lp_train1, dt_test)
+#lp_train1 <- lp(dt_train1, "SVM")
 
-multilabel_confusion_matrix(dt_test, pred_lp_1)
-(eval_lp_1 <- multilabel_evaluate(dt_test, pred_lp_1, measures = c("example-based", "micro-based")))
+#saveRDS(lp_train1, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\lp_train.rds")
+
+lp_train <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\lp_train.rds")
+
+pred_lp <- predict(lp_train, dt_test)
+
+head(as.probability(pred_lp))
+multilabel_confusion_matrix(dt_test, pred_lp)
+(eval_lp <- multilabel_evaluate(dt_test, pred_lp, measures = c("example-based")))
 ```
 
-Accuracy na poziomie 96%.
+*Accuracy* na poziomie 100%, pozostałe metryki również bardzo dobrze.
 
 #### Classifier chains model
 
 ```{r}
-cc_train1 <- ecc(dt_train1, "SVM", seed = 123)
-pred_cc_1 <- predict(cc_train1, dt_test)
+cc_train <- ecc(dt_train1, "SVM")
+pred_cc <- predict(cc_train, dt_test)
 
-multilabel_confusion_matrix(dt_test, pred_cc_1)
-(eval_cc_1 <- multilabel_evaluate(dt_test, pred_cc_1, measures = c("example-based", "micro-based")))
+head(as.probability(pred_cc))
+multilabel_confusion_matrix(dt_test, pred_cc)
+(eval_cc <- multilabel_evaluate(dt_test, pred_cc, measures = c("example-based")))
 ```
 
-Accuracy na poziomie 90%.
+*Accuracy* na poziomie 100%, pozostałe metryki bardzo dobrze.
 
-
-#### Podsumowanie modeli bez upsamplingu
+#### Podsumowanie modeli SVM
 
 ```{r}
-library(gt)
-data.frame(eval_br_1) |> 
-  bind_cols(eval_lp_1, eval_cc_1) |> 
+data.frame(eval_br) |> 
+  bind_cols(eval_lp, eval_cc) |> 
   rownames_to_column("metric") |> 
-  setNames(c("Metric", "BR without MLSMOTE", "LP without MLSMOTE", "CC without MLSMOTE")) |> 
+  setNames(c("Metric", "Binary Relevance", "Label Powerset", "Classifier Chains")) |> 
   gt() |> 
   fmt_number(columns = 2:4, decimals = 4)
 ```
 
+Ponieważ model SVM okazał się idealną skutecznością w tym zadaniu, nie zostanie dla niego przeprowadzona alternatywa w postaci treningu oraz ewaluacji modelu na zbiorze z *upsamplingiem*.
 
-### Sieci gęste
+## Sieci gęste
 
-#### Model 1
+Zbiór danych, podobnie jak w poprzedniej części zostanie odpowiednio przygotowany - znormalizowane zostaną wszystkie numeryczne predyktory, a wszystkie kategoryczne zostaną przekształcone na *dummy* wykorzystując *one-hot-encoding*. Zbiór danych uczących będzie stanowił 70% pierwotnego zbioru, a testowych 30%.
 
 ```{r}
 split <- initial_split(dane3, prop = 0.7)
@@ -1012,7 +841,7 @@ df_test <- testing(split)
 
 rec <- recipe(death+hospdead+sfdm2 ~ ., data = df_train) |> 
   step_normalize(all_numeric_predictors()) |> 
-  step_dummy(sex, dzgroup, dzclass, ca, income, race, diabetes, dementia)
+  step_dummy(all_factor_predictors(), one_hot = TRUE)
 
 df_train_trans <- rec |> 
   prep() |> 
@@ -1023,58 +852,6 @@ df_test_trans <- rec |>
   prep() |> 
   bake(new_data = df_test) |> 
   select(everything())
-
-df_train_trans |> 
-  head()
-
-df_train_trans$dementia_X1 <- as.numeric(df_train_trans$dementia_X1)
-df_train_trans$diabetes_X1 <- as.numeric(df_train_trans$diabetes_X1)
-df_train_trans$race_X2 <- as.numeric(df_train_trans$race_X2)
-df_train_trans$race_X3 <- as.numeric(df_train_trans$race_X3)
-df_train_trans$race_X4 <- as.numeric(df_train_trans$race_X4)
-df_train_trans$race_X5 <- as.numeric(df_train_trans$race_X5)
-df_train_trans$income_X4 <- as.numeric(df_train_trans$income_X4)
-df_train_trans$income_X3 <- as.numeric(df_train_trans$income_X3)
-df_train_trans$income_X2 <- as.numeric(df_train_trans$income_X2)
-df_train_trans$ca_X2 <- as.numeric(df_train_trans$ca_X2)
-df_train_trans$ca_X1 <- as.numeric(df_train_trans$ca_X1)
-df_train_trans$dzclass_X2 <- as.numeric(df_train_trans$dzclass_X2)
-df_train_trans$dzclass_X3 <- as.numeric(df_train_trans$dzclass_X3)
-df_train_trans$dzclass_X4 <- as.numeric(df_train_trans$dzclass_X4)
-df_train_trans$dzgroup_X2 <- as.numeric(df_train_trans$dzgroup_X2)
-df_train_trans$dzgroup_X3 <- as.numeric(df_train_trans$dzgroup_X3)
-df_train_trans$dzgroup_X4 <- as.numeric(df_train_trans$dzgroup_X4)
-df_train_trans$dzgroup_X5 <- as.numeric(df_train_trans$dzgroup_X5)
-df_train_trans$dzgroup_X6 <- as.numeric(df_train_trans$dzgroup_X6)
-df_train_trans$dzgroup_X7 <- as.numeric(df_train_trans$dzgroup_X7)
-df_train_trans$dzgroup_X8 <- as.numeric(df_train_trans$dzgroup_X8)
-df_train_trans$sex_X1 <- as.numeric(df_train_trans$sex_X1)
-df_train_trans <- as.data.frame(df_train_trans)
-
-df_test_trans$dementia_X1 <- as.numeric(df_test_trans$dementia_X1)
-df_test_trans$diabetes_X1 <- as.numeric(df_test_trans$diabetes_X1)
-df_test_trans$race_X2 <- as.numeric(df_test_trans$race_X2)
-df_test_trans$race_X3 <- as.numeric(df_test_trans$race_X3)
-df_test_trans$race_X4 <- as.numeric(df_test_trans$race_X4)
-df_test_trans$race_X5 <- as.numeric(df_test_trans$race_X5)
-df_test_trans$income_X4 <- as.numeric(df_test_trans$income_X4)
-df_test_trans$income_X3 <- as.numeric(df_test_trans$income_X3)
-df_test_trans$income_X2 <- as.numeric(df_test_trans$income_X2)
-df_test_trans$ca_X2 <- as.numeric(df_test_trans$ca_X2)
-df_test_trans$ca_X1 <- as.numeric(df_test_trans$ca_X1)
-df_test_trans$dzclass_X2 <- as.numeric(df_test_trans$dzclass_X2)
-df_test_trans$dzclass_X3 <- as.numeric(df_test_trans$dzclass_X3)
-df_test_trans$dzclass_X4 <- as.numeric(df_test_trans$dzclass_X4)
-df_test_trans$dzgroup_X2 <- as.numeric(df_test_trans$dzgroup_X2)
-df_test_trans$dzgroup_X3 <- as.numeric(df_test_trans$dzgroup_X3)
-df_test_trans$dzgroup_X4 <- as.numeric(df_test_trans$dzgroup_X4)
-df_test_trans$dzgroup_X5 <- as.numeric(df_test_trans$dzgroup_X5)
-df_test_trans$dzgroup_X6 <- as.numeric(df_test_trans$dzgroup_X6)
-df_test_trans$dzgroup_X7 <- as.numeric(df_test_trans$dzgroup_X7)
-df_test_trans$dzgroup_X8 <- as.numeric(df_test_trans$dzgroup_X8)
-df_test_trans$sex_X1 <- as.numeric(df_test_trans$sex_X1)
-df_test_trans <- as.data.frame(df_test_trans)
-
 
 train_features <- df_train_trans[,-c(26:28)]
 train_features |> dim()
@@ -1084,181 +861,362 @@ train_targets |> dim()
 test_features <- df_test_trans[,-c(26:28)]
 test_features |> dim()
 test_targets <- df_test_trans[,c(26:28)]
+test_targets |> dim()
 
+train_targets$sfdm2 <- to_categorical(train_targets$sfdm2, num_classes = 5)
 
-#model
-inputs <- layer_input(batch_shape = list(NULL, 47))
-outputs <- inputs %>%
-  layer_flatten() |> 
-  layer_dense(units = 128, activation = 'softmax') |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  layer_dropout(0.4) |> 
-  layer_dense(3)
-model <- keras_model(inputs, outputs)
-model |> 
-  compile(
-    loss = "mse",
-    metrics = "accuracy",
-    optimizer = optimizer_adam()
-  )
-model |> summary()
-
-
-#uczenie
-#history <- model |> fit(
-#  x = as.matrix(train_features), y = as.matrix(train_targets),
-#  epochs = 40, 
-#  batch_size = 32,
-#  validation_split = 0.2
-#)
-
-#saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1.rds")
-#save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1.h5")
-
-history <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1.rds")
+#train_targets$death <- to_categorical(train_targets$death, num_classes = 2)
+#train_targets$hospdead <- to_categorical(train_targets$death, num_classes = 2)
+train_targets <- as.matrix(train_targets)
+train_targets <- as.numeric(train_targets) |> matrix(nrow = 6373, ncol = 7, byrow = F) |> as.matrix()
+colnames(train_targets) <- list("death", "hospdead", "sfdm2.1", "sfdm2.2", "sfdm2.3", "sfdm2.4", "sfdm2.5")
 ```
+
+#### Model 1
 
 ```{r}
-plot(history)
+#Definiowanie modelu
+input <- layer_input(shape = c(51))
 
-model <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1.h5")
+#Warstwa ukryta
+hidden <- layer_dense(input, units = 8, activation = 'relu')
 
-eval_model <- model |> 
-  evaluate(as.matrix(test_features), as.matrix(test_targets)) #loss=0.24, accuracy=0.73
+#Dwa wyjścia binarne (death, hospdead)
+binary_output1 <- layer_dense(hidden, units = 1, activation = 'sigmoid', name = 'binary_output1')
+binary_output2 <- layer_dense(hidden, units = 1, activation = 'sigmoid', name = 'binary_output2')
+
+#Jedno wyjście wieloklasowe (5 klas) (sfdm2)
+multi_class_output <- layer_dense(hidden, units = 5, activation = 'softmax', name = 'multi_class_output')
+
+#Definiowanie modelu
+model <- keras_model(inputs = input, outputs = list(binary_output1, binary_output2, multi_class_output))
+
+#Kompilacja modelu z odpowiednimi funkcjami straty
+model %>% compile(
+  optimizer = 'adam',
+  loss = list(
+    binary_output1 = 'binary_crossentropy',
+    binary_output2 = 'binary_crossentropy',
+    multi_class_output = 'categorical_crossentropy'
+  ),
+  metrics = 'accuracy'
+)
+
+history <- model %>% fit(
+  as.matrix(train_features), 
+  list(
+    binary_output1 = train_targets[, "death"],
+    binary_output2 = train_targets[, "hospdead"],
+    multi_class_output = train_targets[, grep("^sfdm2", colnames(train_targets))]
+  ),
+  epochs = 40,
+  batch_size = 32,
+  validation_split = 0.2
+)
+
+#saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1_v2.rds")
+#save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.h5")
+
+history1 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1_v2.rds")
+model1 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.h5")
+
+plot(history1)
 ```
 
-Widoczne jest przeuczenie modelu.
+Na podstawie powyższego rysunku, widzimy, że dla tego (prostego) modelu nie występuje przeuczenie. Zarówno na zbiorze uczącym, jak i testowym, model "zachowuje się" podobnie.
+
+```{r}
+test_targets <- as.matrix(test_targets)
+test_targets <- as.numeric(test_targets) |> matrix(nrow = 2732, ncol = 7, byrow = F) |> as.matrix()
+colnames(test_targets) <- list("death", "hospdead", "sfdm2.1", "sfdm2.2", "sfdm2.3", "sfdm2.4", "sfdm2.5")
+
+model1 %>% 
+  evaluate(as.matrix(test_features), list(test_targets[, "death"],test_targets[, "hospdead"],test_targets[, grep("^sfdm2", colnames(test_targets))])) |> kable(caption = "Metryki modelu na zbiorze testowym", col.names = "Wartość", digits = 4) |> kable_styling(full_width = F) |> column_spec(1, background = "#F9F1F0")
+```
+
+*Accuracy* dla binarnej klasyfikacji zmiennej `death` wynosi 88%. Dla drugiej zmiennej binarnej `hospdead` wynosi ona 93%, a dla zadania klasyfikacji wielostanowej zmiennej `sfdm2` wynosi 8%.
+
+```{r}
+x <- model1 %>% predict(as.matrix(test_features)) #death, hospdead, sfdm2
+#x[[3]] |> k_argmax() |> as.vector() #predicted
+
+#death
+cm <- data.frame(x[[1]] |> k_argmax() |> as.vector(), df_test$death)
+colnames(cm) <- c("pred", "truth")
+cm$pred <- factor(cm$pred, levels = c(0:1))
+cm |> conf_mat(truth = truth, estimate = pred) |> 
+autoplot(type = "heatmap")
+```
+
+Przedstawiona powyżej macierz klasyfikacji dla zmiennej `death` wskazuje, że model w większości przypadków się pomylił i pacjenta martwego zaklasyfikował jako żyjącego. 
+
+```{r}
+#hospdead
+cm2 <- data.frame(x[[2]] |> k_argmax() |> as.vector(), df_test$hospdead)
+colnames(cm2) <- c("pred", "truth")
+cm2$pred <- factor(cm2$pred, levels = c(0:1))
+cm2 |> conf_mat(truth = truth, estimate = pred) |> 
+autoplot(type = "heatmap")
+```
+
+Dla zmiennej `hospdead` model ten 709 razy zaklasyfikował pacjenta, który umarł w szpitalu jako tego, który w nim nie umarł.
+
+```{r}
+#sfdm2
+cm3 <- data.frame(x[[3]] |> k_argmax() |> as.vector(), df_test$sfdm2)
+colnames(cm3) <- c("pred", "truth")
+cm3$pred <- factor(cm3$pred, levels = c(0:4))
+cm3 |> conf_mat(truth = truth, estimate = pred) |> 
+autoplot(type = "heatmap")
+```
+
+Dla klasyfikacji wielostanowej, wyniki nie są satysfakcjonujące. Najtruniej było mu sklasyfikować pacjentów do klasy 2 (pacjent nie był w stanie wykonywać 4 lub więcej czynności życia codziennego w 2. miesiącu po rozpoczęciu badania).
 
 #### Model 2
 
 ```{r}
-#model
-#inputs <- layer_input(batch_shape = list(NULL, 47))
-outputs <- inputs %>%
-  #layer_flatten() |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  layer_dense(units = 32, activation = 'softmax') |> 
-  #layer_dropout(0.4) |> 
-  layer_dense(3)
-model2 <- keras_model(inputs, outputs)
-model2 |> 
-  compile(
-    loss = "mse",
-    metrics = "accuracy",
-    optimizer = optimizer_adam()
-  )
-model2 |> summary()
+outputs <- input |> 
+  layer_flatten() |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dense(units = 32, activation = 'relu')
 
-#uczenie
-#history2 <- model2 |> fit(
-#  x = as.matrix(train_features), y = as.matrix(train_targets),
-#  epochs = 40, 
-# batch_size = 32,
-#  validation_split = 0.2
-#)
+model <- keras_model(inputs = input, outputs = list(binary_output1, binary_output2, multi_class_output))
 
-#saveRDS(history2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2.rds")
-#save_model_hdf5(model2, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2.h5")
+#Kompilacja modelu z odpowiednimi funkcjami straty
+model %>% compile(
+  optimizer = 'adam',
+  loss = list(
+    binary_output1 = 'binary_crossentropy',
+    binary_output2 = 'binary_crossentropy',
+    multi_class_output = 'categorical_crossentropy'
+  ),
+  metrics = 'accuracy'
+)
 
-history2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2.rds")
-
-#evaluation
-plot(history2)
-
-model2 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2.h5")
-
-eval_model <- model2 |> 
-  evaluate(as.matrix(test_features), as.matrix(test_targets)) #loss=0.27, acc=0.77
-```
-
-Tutaj lepsze wyniki modelu od poprzedniego.
-
-#### Model 3
-
-```{r}
-#model
-outputs <- inputs %>%
-  #layer_flatten() |> 
-  layer_dense(units = 32, activation = 'softmax') |> 
-  layer_dropout(0.4) |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  #layer_dropout(0.2) |> 
-  layer_dense(units = 128, activation = 'softmax') |>
-  #layer_dropout(0.2) |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  layer_dropout(0.4) |> 
-  layer_dense(3)
-model3 <- keras_model(inputs, outputs)
-model3 |> 
-  compile(
-    loss = "mse",
-    metrics = "accuracy",
-    optimizer = optimizer_adam()
-  )
-model3 |> summary()
-
-#uczenie
-#history3 <- model3 |> fit(
-#  x = as.matrix(train_features), y = as.matrix(train_targets),
-#  epochs = 40, 
+#history <- model %>% fit(
+#  as.matrix(train_features), 
+#  list(
+#    binary_output1 = train_targets[, "death"],
+#    binary_output2 = train_targets[, "hospdead"],
+#    multi_class_output = train_targets[, grep("^sfdm2", colnames(train_targets))]
+#  ),
+#  epochs = 40,
 #  batch_size = 32,
 #  validation_split = 0.2
 #)
 
-#saveRDS(history3, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3.rds")
-#save_model_hdf5(model3, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3.h5")
+saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2_v2.rds")
+save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.h5")
 
-history3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3.rds")
-model3 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3.h5")
+history2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2_v2.rds")
+model2 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.h5")
 
-plot(history3)
-
-eval_model <- model3 |> 
-  evaluate(as.matrix(test_features), as.matrix(test_targets)) #loss=0.28, acc=0.62
+plot(history2)
 ```
 
-Mniejsze przeuczenie! Ale accuracy około 62%.
-
-#### Model 4
+Tym razem model składa się z z jednej warstwy *flatten* oraz dwóch warstw gęstych z 64 oraz 32 neuronami w każdej z nich. Dla tego modelu widać lekkie przeuczenie - dla każdej zmiennej wyjściowej metryki na zbiorze walidacyjnym są nieco niższe niż na zbiorze uczącym, choć nie są to duże różnice.
 
 ```{r}
-outputs <- inputs |> 
+model2 %>% 
+  evaluate(as.matrix(test_features), list(test_targets[, "death"],test_targets[, "hospdead"],test_targets[, grep("^sfdm2", colnames(test_targets))])) |> kable(caption = "Metryki modelu na zbiorze testowym", col.names = "Wartość", digits = 4) |> kable_styling(full_width = F) |> column_spec(1, background = "#F9F1F0")
+```
+
+Zestawione w tabeli wartości metryk wskazują, że nie polepszyły się one względem poprzedniego, prostszego modelu. *Accuracy* dla wyjść binarnych jest niezmienne, a dla wyjścia kieloklasowego wynosi ono jedynie 6%.
+
+```{r}
+x <- model2 %>% predict(as.matrix(test_features)) #death, hospdead, sfdm2
+
+#sfdm2
+cm3 <- data.frame(x[[3]] |> k_argmax() |> as.vector(), df_test$sfdm2)
+colnames(cm3) <- c("pred", "truth")
+cm3$pred <- factor(cm3$pred, levels = c(0:4))
+cm3 |> conf_mat(truth = truth, estimate = pred) |> 
+autoplot(type = "heatmap")
+```
+
+Ponieważ metryka *accuracy* dla zmiennych `death` oraz `hospdead` jest identyczna jak w poprzednim modelu, przedsatwiono powyżej macierz klasyfikacji jedynie dla zmiennej `sfdm2`.
+
+
+#### Model 3
+
+```{r}
+outputs <- input %>%
   layer_flatten() |> 
-  layer_dense(units = 64, activation = 'softmax') |> 
-  layer_dense(units = 32, activation = 'softmax') |> 
-  layer_dense(3)
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dropout(0.2) |> 
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dropout(0.1) |> 
+  layer_dense(units = 64, activation = 'relu') |>
+  layer_dropout(0.2) |> 
+  layer_dense(units = 32, activation = 'relu') |> 
+  layer_dropout(0.1)
 
-model4 <- keras_model(inputs, outputs)
-model4 |> 
-  compile(
-    loss = "mse",
-    metrics = "accuracy",
-    optimizer = optimizer_adam(learning_rate = 1e-3)
-    
-  )
-model4 |> summary()
+model <- keras_model(inputs = input, outputs = list(binary_output1, binary_output2, multi_class_output))
 
-#uczenie
-#history4 <- model4 |> fit(
-#  x = as.matrix(train_features), y = as.matrix(train_targets),
-#  epochs = 40, 
-#  batch_size = 45,
+#Kompilacja modelu z odpowiednimi funkcjami straty
+model %>% compile(
+  optimizer = 'adam',
+  loss = list(
+    binary_output1 = 'binary_crossentropy',
+    binary_output2 = 'binary_crossentropy',
+    multi_class_output = 'categorical_crossentropy'
+  ),
+  metrics = 'accuracy'
+)
+
+#history <- model %>% fit(
+#  as.matrix(train_features), 
+#  list(
+#    binary_output1 = train_targets[, "death"],
+#    binary_output2 = train_targets[, "hospdead"],
+#    multi_class_output = train_targets[, grep("^sfdm2", colnames(train_targets))]
+#  ),
+#  epochs = 40,
+#  batch_size = 32,
 #  validation_split = 0.2
 #)
 
-#saveRDS(history4, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history4.rds")
-#save_model_hdf5(model4, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model4.h5")
+#saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
+#save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.h5")
 
-history4 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history4.rds")
-model4 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model4.h5")
+history3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
+model3 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.h5")
 
-
-plot(history4)
-
-eval_model <- model4 |> 
-  evaluate(as.matrix(test_features), as.matrix(test_targets)) #loss=0.25, acc=0.72
+plot(history3)
 ```
 
-Dodanie learning rate polepszyło wyniki pierwszego modelu.
+Dla tego modelu, również bardziej złożonego, z czterema warstwami *dropout*, także dostrzec można przeuczenie.
 
+```{r}
+model3 %>% 
+  evaluate(as.matrix(test_features), list(test_targets[, "death"],test_targets[, "hospdead"],test_targets[, grep("^sfdm2", colnames(test_targets))])) |> kable(caption = "Metryki modelu na zbiorze testowym", col.names = "Wartość", digits = 4) |> kable_styling(full_width = F) |> column_spec(1, background = "#F9F1F0")
+```
+
+Po ewaluacji modelu na danych testowych, *accuracy* wyjścia modelu dla zmiennej `death` oraz `sfdm2` nie zmieniła się względem modelu 1. Dla zmiennej `hospdead` metryka ta wzrosła o 1 punkt procentowy.
+
+
+```{r}
+x <- model3 %>% predict(as.matrix(test_features)) #death, hospdead, sfdm2
+#hospdead
+cm <- data.frame(x[[2]] |> k_argmax() |> as.vector(), df_test$hospdead)
+colnames(cm) <- c("pred", "truth")
+cm$pred <- factor(cm$pred, levels = c(0:1))
+cm |> conf_mat(truth = truth, estimate = pred) |> 
+autoplot(type = "heatmap")
+```
+
+Wyniki klasyfikacji dla zmiennej `hospdead` są identyczne jak dla modelu 1.
+
+W kolejnych modelach zostaną zastosowanie *callbacks*.
+
+#### Model 4
+
+Ten model będzie składał się z 3 warstw gęstych oddzielonymi warstwami *dropout*.
+
+```{r}
+outputs <- input %>%
+  layer_dense(units = 64, activation = 'relu') |> 
+  layer_dropout(0.2) |> 
+  layer_dense(units = 128, activation = 'relu') |> 
+  layer_dropout(0.2) |> 
+  layer_dense(units = 64, activation = 'relu')
+
+model <- keras_model(inputs = input, outputs = list(binary_output1, binary_output2, multi_class_output))
+
+#Kompilacja modelu z odpowiednimi funkcjami straty
+model %>% compile(
+  optimizer = 'adam',
+  loss = list(
+    binary_output1 = 'binary_crossentropy',
+    binary_output2 = 'binary_crossentropy',
+    multi_class_output = 'categorical_crossentropy'
+  ),
+  metrics = 'accuracy'
+)
+
+#history <- model %>% fit(
+#  as.matrix(train_features), 
+#  list(
+#    binary_output1 = train_targets[, "death"],
+#    binary_output2 = train_targets[, "hospdead"],
+#    multi_class_output = train_targets[, grep("^sfdm2", colnames(train_targets))]
+#  ),
+#  epochs = 30,
+#  batch_size = 32,
+#  validation_split = 0.2,
+#  callbacks = list(callback_early_stopping(monitor = "val_binary_output2_accuracy", patience = 5, restore_best_weights = TRUE))
+#)
+
+#saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history4_v2.rds")
+#save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model4_v2.h5")
+
+history4 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history4_v2.rds")
+model4 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model4_v2.h5")
+
+plot(history4)
+```
+
+Po wprowadzeniu *callback*, czyli funkcji, która jest wywoływana wielokrotnie w trakcie szkolenia modelu i służy sprawdzeniu, czy metryki modelu w kolejnych epokach uczenia poprawiają się, jeśli nie, to uczenie zostaje przerwane. W tym przypadku uczenie modelu zostało zatrzymane już po 6. epoce.
+
+```{r}
+model4 %>% 
+  evaluate(as.matrix(test_features), list(test_targets[, "death"],test_targets[, "hospdead"],test_targets[, grep("^sfdm2", colnames(test_targets))])) |> kable(caption = "Metryki modelu na zbiorze testowym", col.names = "Wartość", digits = 4) |> kable_styling(full_width = F) |> column_spec(1, background = "#F9F1F0")
+```
+
+Dla tego, bardziej rozbudowanego modelu, metryki są identyczne jak dla modelu poprzedniego, zatem raczej wybór prostsztch modeli będzie lepszy do tego zadania.
+
+#### Model 5
+
+```{r}
+outputs <- input %>%
+  layer_dense(units = 4, activation = 'relu') |> 
+  layer_dense(units = 8, activation = 'relu')
+
+model <- keras_model(inputs = input, outputs = list(binary_output1, binary_output2, multi_class_output))
+
+#Kompilacja modelu z odpowiednimi funkcjami straty
+model %>% compile(
+  optimizer = 'adam',
+  loss = list(
+    binary_output1 = 'binary_crossentropy',
+    binary_output2 = 'binary_crossentropy',
+    multi_class_output = 'categorical_crossentropy'
+  ),
+  metrics = 'accuracy'
+)
+
+#history <- model %>% fit(
+#  as.matrix(train_features), 
+#  list(
+#    binary_output1 = train_targets[, "death"],
+#    binary_output2 = train_targets[, "hospdead"],
+#    multi_class_output = train_targets[, grep("^sfdm2", colnames(train_targets))]
+#  ),
+#  epochs = 30,
+#  batch_size = 32,
+#  validation_split = 0.2,
+#  callbacks = list(callback_early_stopping(monitor = "val_binary_output2_accuracy", patience = 5, restore_best_weights = TRUE))
+#)
+
+saveRDS(history, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
+save_model_hdf5(model, "C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.h5")
+
+history5 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
+model5 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.h5")
+
+plot(history5)
+```
+
+```{r}
+model5 %>% 
+  evaluate(as.matrix(test_features), list(test_targets[, "death"],test_targets[, "hospdead"],test_targets[, grep("^sfdm2", colnames(test_targets))])) |> kable(caption = "Metryki modelu na zbiorze testowym", col.names = "Wartość", digits = 4) |> kable_styling(full_width = F) |> column_spec(1, background = "#F9F1F0")
+```
+
+Po ponownym zbudowaniu prostszego modelu, otrzymano metryki bardzo zbliżone do modeli bardziej rozbudowanych.
+
+
+# Podsumowanie
+
+W pracy przedstawiono wszystkie etapy zmierzające do budowy najlepszego modelu zaawansowanego uczenia maszynowego do zadania typu *multioutput* (wiele wyjść) oraz zbudowano takie modele z różnymi architekturami. Modele bardziej rozbudowane okazywały się być niebardziej skuteczne niż te mniej rozbudowane. Trudnym zadaniem okazało się zbudowanie takiego modelu, który skutecznie będzie przewidywał zmienną wieloklasową (`sfdm2`) przy przewidywaniu także zmiennych `death` oraz `hospdead` - najwyższą metrykę *accuracy*, jaką zdołano uzyskać w tej pracy, wynosi 8% dla tego zadania.
+
+Być może inne modele uczenia maszynowego okazałyby się lepszym rozwiązaniem do tego zadania, jak chociażby model SVM. Warto rozwinąć tę pracę pod tym kątem.
