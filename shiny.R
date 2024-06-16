@@ -10,12 +10,30 @@ library(tidymodels)
 library(kableExtra)
 library(grDevices)
 
+####################### Pamiętaj o zmianie ścieżek do wyróżnionych poniżej plików na swoje!
+h1 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1_v2.rds")
+h2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2_v2.rds")
+h3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
+h5 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
+
+m1 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.h5")
+m2 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.h5")
+m3 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.h5")
+m5 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.h5")
+
+train_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_features.rds")
+train_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_targets.rds")
+test_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_features.rds")
+test_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_targets.rds")
+
+df_test <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\df_test.rds")
+#######################
+
 num_vars <- c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")
 fct_vars <- c("death",    "sex" ,     "hospdead", "dzgroup",  "dzclass" , "income",   "race" ,    "diabetes", "dementia", "ca",       "dnr","sfdm2")
 
 ui <- fluidPage(
-  theme = bslib::bs_theme(bootswatch = "pulse"), #united, flatly, simplex, pulse, sandstone, lux
-  #tytuł całej aplikacji
+  theme = bslib::bs_theme(bootswatch = "pulse"),
   titlePanel("SUPPORT2"),
   tabsetPanel(
     #zakładki:
@@ -23,14 +41,10 @@ ui <- fluidPage(
     tabPanel("Wstęp", 
              sidebarLayout(
                sidebarPanel(
-                 #info o samym badaniu, celu
                  textOutput(outputId = "opis_badania"),
-                 #instrukcja obsługi, opis co gdzie jest w aplikacji
                  textOutput(outputId = "instr"),
-                 #wczytanie pliku
-                 fileInput("file1", "Wybierz plik CSV:",accept = c(".csv"), buttonLabel = "Szukaj...", placeholder = "Nie wybano pliku")
+                 fileInput("file1", "Wybierz plik z danymi:",accept = c(".csv"), buttonLabel = "Szukaj...", placeholder = "Nie wybano pliku")
                ),
-               #wyświetlenie danych
                mainPanel(
                  DTOutput("dane")
                )
@@ -41,8 +55,6 @@ ui <- fluidPage(
              mainPanel(
                card(height = 150,
                     textOutput(outputId = "wymiary"),
-                    #textOutput(outputId = "typy_zm1"),
-                    #textOutput(outputId = "typy_zm2"),
                     textOutput(outputId = "zmienne"),
                     textOutput(outputId = "bd")
                ),
@@ -54,7 +66,7 @@ ui <- fluidPage(
                    navset_card_underline(
                      title = "Eksploracja zmiennych numerycznych",
                      nav_panel(title = "Rozkład", plotOutput(outputId = "rozklad_num")),
-                     nav_panel(title = "Statystyki", DTOutput(outputId = "statystyki_num")) #tableOutput(outputId = "statystyki_num")
+                     nav_panel(title = "Statystyki", DTOutput(outputId = "statystyki_num"))
                    )
                  ),
                  accordion_panel(
@@ -63,7 +75,7 @@ ui <- fluidPage(
                    navset_card_underline(
                      title = "Eksploracja zmiennych kategorycznych",
                      nav_panel(title = "Histogram", plotOutput(outputId = "rozklad_fct")),
-                     nav_panel(title = "Liczebność", tableOutput(outputId = "statystyki_fct")) #DTOutput(outputId = "statystyki_fct")
+                     nav_panel(title = "Liczebność", tableOutput(outputId = "statystyki_fct"))
                    )
                  ),
                  accordion_panel(
@@ -93,35 +105,31 @@ ui <- fluidPage(
                  accordion_panel(
                    "Wykres gęstości dla wybranej zmiennej w podziale na dzclass",
                    selectInput(inputId = "zmienna1", label = "Wybierz zmienną, dla której zostanie narysowany wykres", choices = num_vars),
-                   #textOutput(outputId = "opis1"),
                    card(height = 100, "dzclass oznacza kategorię choroby pacjenta: ostra niewydolność nerek/niewydolność wielonarządowa - zakodowane jako 1, przewlekła obturacyjna choroba płuc/zastoinowa niewydolność serca/marskość wątroby - zakodowane jako 2, rak - zakodowane jako 3, śpiączka - zakodowane jako 4."),
                    plotOutput(outputId = "gest1")
                  ),
                  accordion_panel(
                    "Wykres gęstości dla wybranej zmiennej w podziale na ca",
                    selectInput(inputId = "zmienna2", label = "Wybierz zmienną", choices = num_vars),
-                   #textOutput(outputId = "opis2"),
                    card(height = 50, "ca określa, czy pacjent ma raka - zakodowane jako 1, czy rak się rozprzestrzenił - zakodowane jako 2 lub czy jest zdrowy - zakodowane jako 0."),
                    plotOutput(outputId = "gest2")
                  ),
                  accordion_panel(
                    "Wykres gęstości dla wybranej zmiennej w podziale na diabetes",
                    selectInput(inputId = "zmienna3", label = "Wybierz zmienną", choices = num_vars),
-                   #textOutput(outputId = "opis3"),
                    card(height = 50, "diabetes informuje, czy pacjent choruje na cukrzycę - 0 jako nie oraz 1 jako tak."),
                    plotOutput(outputId = "gest3")
                  ),
                  accordion_panel(
                    "Wykres gęstości dla wybranej zmiennej w podziale na dementia",
                    selectInput(inputId = "zmienna4", label = "Wybierz zmienną", choices = num_vars),
-                   #textOutput(outputId = "opis4"),
                    card(height = 50, "dementia informuje, czy pacjent choruje na demencję - 0 jako nie oraz 1 jako tak."),
                    plotOutput(outputId = "gest4")
                  )
                ),
              )
     ),
-    #modele i pred
+    #modele i ewaluacja
     tabPanel("Modele i wyniki",
              mainPanel(
                selectInput(inputId = "model", label = "Wybierz model", choices = c("Model 1", "Model 2", "Model 3", "Model 4")),
@@ -143,24 +151,6 @@ ui <- fluidPage(
   )
 )
 
-#######################
-h1 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1_v2.rds")
-h2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2_v2.rds")
-h3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
-h5 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
-
-m1 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.h5")
-m2 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.h5")
-m3 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.h5")
-m5 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.h5")
-
-train_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_features.rds")
-train_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_targets.rds")
-test_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_features.rds")
-test_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_targets.rds")
-
-df_test <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\df_test.rds")
-#######################
 
 server <- function(input, output) {
   #wstęp
@@ -168,17 +158,13 @@ server <- function(input, output) {
   output$opis_badania <- renderText(expr = "Projekt SUPPORT składał się z dwuletniego prospektywnego badania obserwacyjnego (Faza I), po którym nastąpiło dwuletnie kontrolowane badanie kliniczne (Faza II). Jego celem była poprawa procesu decyzyjnego, aby odpowiedzieć na rosnące krajowe obawy dotyczące utraty kontroli przez pacjentów pod koniec życia i zmniejszyć częstotliwość mechanicznego, bolesnego i długotrwałego procesu umierania. Wszyscy pacjenci w pięciu ośrodkach medycznych w Stanach Zjednoczonych spełnili kryteria włączenia i wykluczenia dla dziewięciu kategorii chorób: ostra niewydolność oddechowa, przewlekła obturacyjna choroba płuc, zastoinowa niewydolność serca, choroba wątroby, śpiączka, rak okrężnicy, rak płuc, niewydolność wielonarządowa z nowotworem złośliwym i niewydolność wielonarządowa z posocznicą. SUPPORT to połączenie pacjentów z dwóch badań, z których każde trwało 2 lata. Pierwsza faza dotyczyła 4 301 pacjentów, podczas gdy druga faza dotyczyła 4 804 pacjentów. Pod względem czasu, badania te zostały przeprowadzone w 1989 r. do 1991 r. dla fazy I oraz w 1992 r. do 1994 r.")
   
   #instrukcja
-  output$instr <- renderText(expr = "Aplikacja składa się z czterech zakładek. Pierwsza stanowi część informacyjną o całym badaniu, zawiera instrukcję użytkowania oraz ma możliwość przesłania danych i ich wyświetlenia. Druga zakładka dotyczy eksploracyjnej analizy danych. W trzeciej zakładce jest możliwość wizualizacji danych pod kątem ich porównania względem wybranych cech. Czwarta zakładka dotyczy modeli uczenia maszynowego - po wyborze danej architektury, dokonywana jest jego ocena na danych testowych.")
+  output$instr <- renderText(expr = "Aplikacja składa się z czterech zakładek. Pierwsza stanowi część informacyjną o całym badaniu. Umożliwia  import danych oraz ich wyświetlenie. Druga zakładka dotyczy eksploracyjnej analizy danych. W trzeciej zakładce jest możliwość wizualizacji danych pod kątem ich porównania względem wybranych cech. Czwarta zakładka dotyczy modeli uczenia maszynowego - po wyborze danej architektury, dokonywana jest jego ocena na danych testowych.")
   
-  # Reaktywna ekspresja do przetwarzania przesłanych plików
+  
   uploadedData <- reactive({
-    # Wymaga, aby użytkownik przesłał plik
     req(input$file1)
-    
-    # Odczytanie danych z pliku
     inFile <- input$file1
     
-    # Walidacja typu pliku - akceptujemy tylko pliki CSV
     validTypes <- c("text/csv", "text/comma-separated-values")
     if (!inFile$type %in% validTypes) {
       stop("Nieprawidłowy typ pliku! Prześlij plik CSV.")
@@ -188,26 +174,18 @@ server <- function(input, output) {
       stop("Nie przesłałeś odpowiedniego pliku z danymi!")
     }
     
-    # Przetwarzanie pliku - przykład odczytu pliku CSV
     tryCatch({
       read.csv(inFile$datapath)
     }, error = function(e) {
       stop("Wystąpił błąd podczas odczytu pliku: ", e$message)
     })
-    
-    
   })
   
   output$dane <- renderDataTable({
     uploadedData()
-    
     req(input$file1)
-    
-    # Odczytanie danych z pliku
     inFile <- input$file1
-    
-    # Odczytanie danych z przesłanego pliku
-    x <- read.csv(inFile$datapath, sep = ",")# |> head(4)
+    x <- read.csv(inFile$datapath, sep = ",")
     x
   }, options = list(scrollX=T, server=F, pageLength=7, scrollY=T))
   
@@ -219,46 +197,6 @@ server <- function(input, output) {
       stop("Wczytaj plik z danymi, aby zobaczyć ich opis.")
     })
   })
-  
-  #output$typy_zm1 <- renderText({
-  #  tryCatch({
-  #    f <- c()
-  #    n <- c()
-  #    for(i in c(1:ncol(uploadedData()))){
-  #      ifelse(class(uploadedData()[,i])=="factor", f[i] <- colnames(uploadedData())[i], n[i] <- colnames(uploadedData())[i])
-  #    }
-  #    c("- zmienne jakościowe w tym zbiorze danych to: ", 
-  #      str_c(unlist(f[!is.na(f)])[1],
-  #            unlist(f[!is.na(f)])[2],
-  #            unlist(f[!is.na(f)])[3],
-  #            unlist(f[!is.na(f)])[4],
-  #            unlist(f[!is.na(f)])[5],
-  #            unlist(f[!is.na(f)])[6],
-  #            unlist(f[!is.na(f)])[7],
-  #            unlist(f[!is.na(f)])[8], 
-  #            unlist(f[!is.na(f)])[9], 
-  #            unlist(f[!is.na(f)])[10], 
-  #            unlist(f[!is.na(f)])[11], 
-  #            unlist(f[!is.na(f)])[12], sep = ", "))
-  #  }, error = function(e){
-  #    stop("Wczytaj plik z danymi, aby zobaczyć ich opis.")
-  #  })
-  #})
-  
-  #output$typy_zm2 <- renderText({
-  #  tryCatch({
-  #    f <- c()
-  #    n <- c()
-  #   for(i in c(1:ncol(uploadedData()))){
-  #      ifelse(class(uploadedData()[,i])=="factor", f[i] <- colnames(uploadedData())[i], n[i] <- colnames(uploadedData())[i])
-  #   }
-  #  c("- zmienne ilościowe w tym zbiorze danych to: ",
-  #     str_sub(str_c(unlist(n[!is.na(n)])[1], unlist(n[!is.na(n)])[2], unlist(n[!is.na(n)])[3], unlist(n[!is.na(n)])[4], unlist(n[!is.na(n)])[5], unlist(n[!is.na(n)])[6], unlist(n[!is.na(n)])[7], unlist(n[!is.na(n)])[8], unlist(n[!is.na(n)])[9], unlist(n[!is.na(n)])[10], unlist(n[!is.na(n)])[11], unlist(n[!is.na(n)])[12], unlist(n[!is.na(n)])[13], unlist(n[!is.na(n)])[14], unlist(n[!is.na(n)])[15], unlist(n[!is.na(n)])[16], unlist(n[!is.na(n)])[17], unlist(n[!is.na(n)])[18], unlist(n[!is.na(n)])[19], unlist(n[!is.na(n)])[20], unlist(n[!is.na(n)])[21], unlist(n[!is.na(n)])[22], unlist(n[!is.na(n)])[23], unlist(n[!is.na(n)])[24], unlist(n[!is.na(n)])[25], unlist(n[!is.na(n)])[26], unlist(n[!is.na(n)])[27], unlist(n[!is.na(n)])[28], unlist(n[!is.na(n)])[29], unlist(n[!is.na(n)])[30], unlist(n[!is.na(n)])[31], unlist(n[!is.na(n)])[32], unlist(n[!is.na(n)])[33], unlist(n[!is.na(n)])[34], unlist(n[!is.na(n)])[35], sep = ", "), end = -1)
-  #    )}, error = function(e){
-  #      stop("Wczytaj plik z danymi, aby zobaczyć ich opis.")
-  #    }
-  #  )
-  #})
   
   output$zmienne <- renderText({
     tryCatch({
@@ -276,10 +214,6 @@ server <- function(input, output) {
       stop("Wczytaj plik z danymi, aby zobaczyć ich opis.")
     })
   })
-  
-  #output$statystyki_num <- renderTable({
-  #  summary([,input$var_num])
-  #}, digits = 4, striped = F, rownames = T, colnames = F)
   
   output$statystyki_num <- renderDataTable({
     uploadedData()
@@ -311,21 +245,11 @@ server <- function(input, output) {
     })
   }, digits = 4, striped = T, rownames = T, colnames = F)
   
-  #output$statystyki_fct <- renderDataTable({
-  #  req(input$file1)
-  #  inFile <- input$file1
-  #  tryCatch({
-  #    read.csv(inFile$datapath, sep = ",")[,input$var_fct] |> as.factor() |>  summary()
-  #  }, error = function(e) {
-  #    stop("Wczytaj najpierw plik z danymi.")
-  #  })
-  #}, options = list(server=F, searching=F, paging=F))
-  
   output$rozklad_fct <- renderPlot({
     zmienna <- reactive(input$var_fct)
     tryCatch({
       ggplot(data = uploadedData(), aes(x = uploadedData()[,zmienna()]))+
-        geom_bar(fill = "#DD99EB")+
+        geom_bar(fill = "#CC9999")+
         theme(axis.title.x = element_blank())
     }, error = function(e){
       stop("Wczytaj najpierw plik z danymi.")
@@ -402,11 +326,6 @@ server <- function(input, output) {
       stop("Musisz najpierw wczytać plik z danymi, aby zobaczyć wykres.")
     })
   })
-  
-  # output$opis1 <- renderText(expr = "dzclass oznacza kategorię choroby pacjenta: ostra niewydolność nerek/niewydolność wielonarządowa - zakodowane jako 1, przewlekła obturacyjna choroba płuc/zastoinowa niewydolność serca/marskość wątroby - zakodowane jako 2, rak - zakodowane jako 3, śpiączka - zakodowane jako 4.")
-  #  output$opis2 <- renderText(expr = "ca określa, czy pacjent ma raka - zakodowane jako 1, czy rak się rozprzestrzenił - zakodowane jako 2 lub czy jest zdrowy - zakodowane jako 0.")
-  #  output$opis3 <- renderText(expr = "diabetes informuje, czy pacjent choruje na cukrzycę - 0 jako nie oraz 1 jako tak.")
-  #  output$opis4 <- renderText(expr = "dementia informuje, czy pacjent choruje na demencję - 0 jako nie oraz 1 jako tak.")
   
   output$history <- renderPlot({
     mod <- reactive(input$model)
@@ -596,4 +515,3 @@ server <- function(input, output) {
 
 
 shinyApp(ui = ui, server = server)
-
