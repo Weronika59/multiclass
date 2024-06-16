@@ -16,60 +16,69 @@ Przed uruchomieniem należy pobrać dane `support2.csv` dostępne w tym repozyto
 
 Aplikację można uruchomić wpisaując w wyszukiwarce następującą formułę: http://127.0.0.1:5150/ lub otwierając plik `shiny.R` w programie RStudio oraz nacisnąć przycisk *Run App* znajdujący się w prawym górnym rogu programu.
 
-*rys. instr1.png*
+![instr1](https://github.com/Weronika59/multiclass/assets/75950630/090edcfd-b70d-4871-8bce-3f7d24d70583)
+
 
 #### Instrukcja użytkowania
 
 Po uruchomieniu aplikacji, powinna ona wyglądać tak:
 
-*rys. str_tytulowa.png*
+![str_tytulowa](https://github.com/Weronika59/multiclass/assets/75950630/30cb4b08-2150-4f90-9de8-4a4205f40431)
+
 
 ##### Wstęp
 
 Pierwsza zakładka to strona tytułowa. Stanowi ona wstęp do całego badania oraz aplikacji. Jest tu możliwość importu (odpowiednich) danych - jeśli nie wczyta się ich, nie będzie możliwości użytkowania aplikacji do celów, do jakich została stworzona.
 
-*rys. instr2.png*
+![instr2](https://github.com/Weronika59/multiclass/assets/75950630/edf3a037-3c6e-41ca-8234-938e4b4fdbbc)
+
 
 Po wczytaniu odpowiedniego pliku z danymi (dedykowanymi do tej aplikacji), aplikacja automatycznie umożliwia ich podgląd. Użytkownik może zdefiniować liczbę wyświetlanych wierszy, przeglądać kolejne strony wczytanego zbioru, czy sortować dane według wybranej przez siebie zmiennej.
 
-*rys. podglad_danych.png*
+![podglad_danych](https://github.com/Weronika59/multiclass/assets/75950630/eeee3cd3-546c-45fc-b9a4-bfe5db57849c)
+
 
 ##### EDA
 
 Drugi panel umożliwia eksploracyjną analizę wczytanych danych. Składa się on z dwóch głównych części: pierwsza to krótka charakterystyka wczytanych danych. Druga składa się z trzech rozwijanych kart, które dotyczą różnych aspektów EDA. W "Zmiennych numerycznych" w pierwszej zakładce przedstawiono histogram, wybranej wcześniej z rozwijanego menu, zmiennej, a w drugiej zakładce widoczne są statystyki opisowe tej zmiennej.
 
+![eda1](https://github.com/Weronika59/multiclass/assets/75950630/5148ea3a-8691-4e35-9a6d-1483c49f4a35)
+
 Druga karta dotyczy zmiennych kategorycznych - w pierwszej zakładce przedstawiany jest histogram wybranej przez użytkownika zmiennej, a w drugiej zakładce przedstawiony jest jej dokładny rozkład liczebnościowy.
 
 Trzecia karta umożliwia przedstawienie wykresu ramka-wąsy dla wybranej zmiennej, a w drugiej zakładce, po zdefiniowaniu drugiej zmiennej z menu rozwijanego, wyświetlana jest wartość korelacji pomiędzy wybranymi zmiennymi.
 
-*rys. eda2.png*
+![eda2](https://github.com/Weronika59/multiclass/assets/75950630/ea46601b-990f-4a5f-839c-64ba7f51f272)
 
-*rys. eda3.png*
+![eda3](https://github.com/Weronika59/multiclass/assets/75950630/ab96efdb-9ad8-4cc2-8ad2-81c3d29f4cb4)
+
 
 ##### Wizualizacje
 
 Ten panel umożliwia wizualizacje wykresów gęstości wybranych zmiennych z podanych grupach. Składa się ona z czterech rozwijanych kart. Pierwsza dotyczy zmiennej `dzclass`, druga zmiennej `ca`, trzecia `diabetes`, a czwarta `dementia`. W każdej z karcie, po jej rozwinięciu, widnieje także wyjaśnienie znaczenia danej zmiennej w tym zbiorze danych.
 
-*rys. eda4.png*
+![eda4](https://github.com/Weronika59/multiclass/assets/75950630/0a903102-434f-4325-9a5f-7d1a4de42281)
 
-*rys. eda5.png*
+![eda5](https://github.com/Weronika59/multiclass/assets/75950630/0111b6bd-2552-45c9-8502-b183c0b566e6)
+
 
 ##### Modele i wyniki
 
 W zakładce "Modele i wyniki", po wybraniu jednego z czterech modeli z listy rozwijanej, rysowana jest jego historia uczenia na zbiorze treningowym wczytanych przez użytkowanika danych, oraz wyświetlane są metryki tego modelu na danych testowyc, a pod spodem także trzy macierze klasyfikacji - każda dotyczy jednej z przewidywanych przez modele zmiennych w tym zbiorze.
 
-*rys. modele1.png*
+![modele1](https://github.com/Weronika59/multiclass/assets/75950630/47fe4251-187c-4070-ab51-b3c40fa25118)
 
-*rys. modele2.png*
+![modele2](https://github.com/Weronika59/multiclass/assets/75950630/5a15aa82-8359-4399-aa9f-e4705bf8d71e)
 
 
 #### Informacje dodatkowe
 
 Aplikacja zawiera odpowiednią obsługę błedów.
 
-*rys. blad1.png*
+![blad1](https://github.com/Weronika59/multiclass/assets/75950630/b0526b31-4d12-40a6-98a0-00efdb8dba35)
 
-*rys. blad2.png*
+![blad2](https://github.com/Weronika59/multiclass/assets/75950630/ba766452-68ec-4987-bf9b-d2ed36fef988)
+
 
 Całe badanie - zarówno raport, jak i aplikacja - zostały opracowane za pomocą języka programowania R w programie RStudio.
 
