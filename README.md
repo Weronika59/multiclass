@@ -12,12 +12,13 @@ Celem badania było zbudowanie zaawansowanego modelu uczenia maszynowego prognoz
 
 ### Opis aplikacji
 
-Przed uruchomieniem należy pobrać dane `support2.csv` dostępne w tym repozytorium oraz wszystkie pliki o rozszerzeniu `.rds` - są to gotowe architektury modeli oraz dane, na których w aplikacji można dokonywać ich ewaluacji. Wszystkie pliki powinny znajdować sie w jednym folderze.
+Przed uruchomieniem należy pobrać dane `support2.csv` dostępne w tym repozytorium oraz wszystkie pliki o rozszerzeniu `.rds` i `.keras` - są to gotowe architektury modeli oraz dane, na których w aplikacji można dokonywać ich ewaluacji. Wszystkie pliki powinny znajdować sie w jednym folderze.
 
-Aplikację można uruchomić wpisaując w wyszukiwarce następującą formułę: http://127.0.0.1:5150/ lub otwierając plik `shiny.R` w programie RStudio oraz nacisnąć przycisk *Run App* znajdujący się w prawym górnym rogu programu.
+Aplikację należy uruchomić otwierając plik `shiny.R` w programie RStudio i naciskając przycisk *Run App* znajdujący się w prawym górnym rogu programu.
 
 ![instr1](https://github.com/Weronika59/multiclass/assets/75950630/090edcfd-b70d-4871-8bce-3f7d24d70583)
 
+Aplikację, po uruchomieniu w programie RStusio, można także otworzyć w przeglądarce.
 
 #### Instrukcja użytkowania
 
@@ -64,11 +65,11 @@ Ten panel umożliwia wizualizacje wykresów gęstości wybranych zmiennych z pod
 
 ##### Modele i wyniki
 
-W zakładce "Modele i wyniki", po wybraniu jednego z czterech modeli z listy rozwijanej, rysowana jest jego historia uczenia na zbiorze treningowym wczytanych przez użytkowanika danych, oraz wyświetlane są metryki tego modelu na danych testowyc, a pod spodem także trzy macierze klasyfikacji - każda dotyczy jednej z przewidywanych przez modele zmiennych w tym zbiorze.
+W zakładce "Modele i wyniki", po wybraniu jednego z czterech modeli z listy rozwijanej, rysowana jest jego historia uczenia na zbiorze treningowym wczytanych przez użytkowanika danych, oraz wyświetlane są metryki tego modelu na danych testowych, a pod spodem także trzy macierze klasyfikacji - każda dotyczy jednej z przewidywanych przez modele zmiennych w tym zbiorze.
 
-![modele1](https://github.com/Weronika59/multiclass/assets/75950630/47fe4251-187c-4070-ab51-b3c40fa25118)
+![modele1](https://github.com/Weronika59/multiclass/assets/75950630/47a79c9d-fafe-40a6-ba50-2620caf62657)
 
-![modele2](https://github.com/Weronika59/multiclass/assets/75950630/5a15aa82-8359-4399-aa9f-e4705bf8d71e)
+![modele2](https://github.com/Weronika59/multiclass/assets/75950630/7ec751cf-f341-4169-bb9e-10fb858ac15a)
 
 
 #### Informacje dodatkowe
