@@ -16,10 +16,10 @@ h2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\seme
 h3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
 h5 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
 
-m1 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.h5")
-m2 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.h5")
-m3 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.h5")
-m5 <- load_model_hdf5("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.h5")
+m1 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.keras")
+m2 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.keras")
+m3 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.keras")
+m5 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.keras")
 
 train_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_features.rds")
 train_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_targets.rds")
