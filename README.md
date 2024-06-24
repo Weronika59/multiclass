@@ -2,7 +2,7 @@
 
 To repozytorium zawiera pliki potrzebne do realizacji projektu z przedmiotów Zaawansowane metody uczenia maszynowego oraz Wdrażanie modeli uczenia maszynowego.
 
-W ramach przedmiotu Zaawansowane metody uczenia maszynowego, przeprowadzono analizę danych z repozytorium UCI (https://archive.ics.uci.edu/dataset/880/support2) dotyczących pacjentów przebywających w stanie krytycznym w ośrodkach medycznych w Stanach Zjednoczonych. Na tej podsatwie zbudowano zaawansowane modele uczenia maszynowego przewidujących(?) trzy cechy (zadanie *multioutput*). Raport jest dostępny w formacie HTML jako plik `support.html`.
+W ramach przedmiotu Zaawansowane metody uczenia maszynowego, przeprowadzono analizę danych z repozytorium UCI (https://archive.ics.uci.edu/dataset/880/support2) dotyczących pacjentów przebywających w stanie krytycznym w ośrodkach medycznych w Stanach Zjednoczonych. Na tej podsatwie zbudowano zaawansowane modele uczenia maszynowego klasyfikujących trzy cechy (zadanie *multioutput*). Raport jest dostępny w formacie HTML jako plik `support.html`.
 
 W ramach przedmiotu Wdrażanie modeli uczenia maszynowego przygotowano aplikację w systemie Shiny, umożliwiającą m. in. import analizowanych danych, ich eksplorację oraz ewaluację modelu. Aplikacja jest dostępna jako plik `shiny.R`.
 
@@ -18,7 +18,7 @@ Aplikację należy uruchomić otwierając plik `shiny.R` w programie RStudio i n
 
 ![instr1](https://github.com/Weronika59/multiclass/assets/75950630/090edcfd-b70d-4871-8bce-3f7d24d70583)
 
-Aplikację, po uruchomieniu w programie RStusio, można także otworzyć w przeglądarce.
+Aplikację, po uruchomieniu w programie RStudio, można także otworzyć w przeglądarce.
 
 #### Instrukcja użytkowania
 
@@ -65,7 +65,7 @@ Ten panel umożliwia wizualizacje wykresów gęstości wybranych zmiennych z pod
 
 ##### Modele i wyniki
 
-W zakładce "Modele i wyniki", po wybraniu jednego z czterech modeli z listy rozwijanej, rysowana jest jego historia uczenia na zbiorze treningowym wczytanych przez użytkowanika danych, oraz wyświetlane są metryki tego modelu na danych testowych, a pod spodem także trzy macierze klasyfikacji - każda dotyczy jednej z przewidywanych przez modele zmiennych w tym zbiorze.
+W zakładce "Modele i wyniki", po wybraniu jednego z czterech modeli z listy rozwijanej, rysowana jest jego historia uczenia na zbiorze treningowym wczytanych przez użytkowanika danych, oraz wyświetlane są metryki tego modelu na danych testowych, a poniżej także trzy macierze klasyfikacji - każda dotyczy jednej z przewidywanych przez model zmiennych w tym zbiorze.
 
 ![modele1](https://github.com/Weronika59/multiclass/assets/75950630/47a79c9d-fafe-40a6-ba50-2620caf62657)
 
