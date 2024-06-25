@@ -10,23 +10,24 @@ library(tidymodels)
 library(kableExtra)
 library(grDevices)
 
-####################### Pamiętaj o zmianie ścieżek do wyróżnionych poniżej plików na swoje!
-h1 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history1_v2.rds")
-h2 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history2_v2.rds")
-h3 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history3_v2.rds")
-h5 <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\history5_v2.rds")
+#######################
+x <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(x)
+h1 <- readRDS("history1_v2.rds")
+h2 <- readRDS("history2_v2.rds")
+h3 <- readRDS("history3_v2.rds")
+h5 <- readRDS("history5_v2.rds")
 
-m1 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model1_v2.keras")
-m2 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model2_v2.keras")
-m3 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model3_v2.keras")
-m5 <- load_model_tf("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\model5_v2.keras")
+m1 <- load_model_tf("model1_v2.keras")
+m2 <- load_model_tf("model2_v2.keras")
+m3 <- load_model_tf("model3_v2.keras")
+m5 <- load_model_tf("model5_v2.keras")
 
-train_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_features.rds")
-train_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\train_targets.rds")
-test_features <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_features.rds")
-test_targets <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\test_targets.rds")
-
-df_test <- readRDS("C:\\Users\\wnadw\\Desktop\\Pliki studia\\Rok 4\\II stopień\\semestr 1\\Zaawansowane metody uczenia maszynowego\\projekt\\dane UCI\\multiclass\\support2\\multiclass\\df_test.rds")
+train_features <- readRDS("train_features.rds")
+train_targets <- readRDS("train_targets.rds")
+test_features <- readRDS("test_features.rds")
+test_targets <- readRDS("test_targets.rds")
+df_test <- readRDS("df_test.rds")
 #######################
 
 num_vars <- c("age","slos", "d.time", "num.co", "edu", "scoma", "charges", "totcst", "totmcst", "avtisst", "hday", "meanbp", "wblc", "hrt", "resp", "temp", "pafi", "alb", "bili", "crea", "sod", "ph", "glucose", "bun", "urine", "adlp", "adls", "adlsc")
